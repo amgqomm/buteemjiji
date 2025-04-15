@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "286511755703",
+    "project_id": "buteemjiji-10863",
+    "storage_bucket": "buteemjiji-10863.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:286511755703:android:15b6b38ce585078b3bb832",
+        "android_client_info": {
+          "package_name": "com.amgaa.buteemjiji"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDKRQqO8anWYADXiYFgBzH5DNEuLO6PWCg"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
