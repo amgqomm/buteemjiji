@@ -1,10 +1,10 @@
-// widgets/todo_item.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:auto_route/auto_route.dart';
 import '../cubits/task/task_cubit.dart';
 import '../models/task_model.dart';
 import '../routes/app_router.dart';
+import '../utils/theme_constants.dart';
 
 class TodoItem extends StatelessWidget {
   final Task task;
@@ -15,9 +15,8 @@ class TodoItem extends StatelessWidget {
   Widget build(BuildContext context) {
     final isCompleted = task.isCompleted ?? false;
     final dueDate = task.dueDate;
-    final isPastDue = dueDate != null &&
-        dueDate.isBefore(DateTime.now()) &&
-        !isCompleted;
+    final isPastDue =
+        dueDate != null && dueDate.isBefore(DateTime.now()) && !isCompleted;
 
     return GestureDetector(
       onTap: () {
@@ -29,15 +28,20 @@ class TodoItem extends StatelessWidget {
         color: isPastDue ? Colors.red.shade50 : null,
         shape: RoundedRectangleBorder(
           borderRadius: BorderRadius.circular(12),
-          side: isPastDue
-              ? BorderSide(color: Colors.red.shade300, width: 1.0)
-              : BorderSide.none,
+          side:
+              isPastDue
+                  ? BorderSide(color: Colors.red.shade300, width: 1.5)
+                  : BorderSide(color: AppTheme.todoTeal, width: 1.5),
         ),
         child: ListTile(
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+          contentPadding: const EdgeInsets.symmetric(
+            horizontal: 12.0,
+            vertical: 4.0,
+          ),
           leading: Checkbox(
             value: isCompleted,
-            activeColor: isPastDue ? Colors.red : null,
+            checkColor: AppTheme.cardBackground,
+            activeColor: isPastDue ? AppTheme.negativeRed : AppTheme.todoTeal,
             onChanged: (bool? value) {
               if (value == true && !isCompleted) {
                 context.read<TaskCubit>().completeTask(task);
@@ -53,24 +57,29 @@ class TodoItem extends StatelessWidget {
               fontSize: 16,
               fontWeight: isPastDue && !isCompleted ? FontWeight.bold : null,
               decoration: isCompleted ? TextDecoration.lineThrough : null,
-              color: isCompleted
-                  ? Colors.grey
-                  : isPastDue ? Colors.red.shade700 : null,
+              color:
+                  isCompleted
+                      ? AppTheme.todoTeal
+                      : isPastDue
+                      ? Colors.red.shade700
+                      : null,
             ),
           ),
-          subtitle: dueDate != null
-              ? _buildDueDateSubtitle(dueDate, isPastDue)
-              : null,
-          trailing: isPastDue
-              ? Container(
-            width: 4,
-            height: 45,
-            decoration: BoxDecoration(
-              color: Colors.red.shade400,
-              borderRadius: BorderRadius.circular(4),
-            ),
-          )
-              : null,
+          subtitle:
+              dueDate != null
+                  ? _buildDueDateSubtitle(dueDate, isPastDue)
+                  : null,
+          trailing:
+              isPastDue
+                  ? Container(
+                    width: 4,
+                    height: 45,
+                    decoration: BoxDecoration(
+                      color: Colors.red.shade400,
+                      borderRadius: BorderRadius.circular(4),
+                    ),
+                  )
+                  : null,
         ),
       ),
     );
@@ -82,11 +91,7 @@ class TodoItem extends StatelessWidget {
       child: Row(
         children: [
           if (isPastDue)
-            Icon(
-              Icons.warning_rounded,
-              color: Colors.red.shade700,
-              size: 16,
-            ),
+            Icon(Icons.warning_rounded, color: Colors.red.shade700, size: 16),
           if (isPastDue) const SizedBox(width: 4),
           Text(
             isPastDue

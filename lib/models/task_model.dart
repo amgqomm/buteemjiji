@@ -85,6 +85,7 @@ class Task extends Equatable {
     required Difficulty difficulty,
     bool isCompleted = false,
     required DateTime dueDate,
+    required DateTime lastCompletedDate,
   }) {
     return Task(
       taskId: taskId,
@@ -95,6 +96,7 @@ class Task extends Equatable {
       difficulty: difficulty,
       isCompleted: isCompleted,
       dueDate: dueDate,
+      lastCompletedDate: lastCompletedDate,
     );
   }
 
@@ -117,15 +119,14 @@ class Task extends Equatable {
 
   factory Task.fromFirestore(DocumentSnapshot doc) {
     final data = doc.data() as Map<String, dynamic>;
-
-    final taskType = _taskTypeFromString(data['type'] ?? 'todo');
+    final taskType = _taskTypeFromString(data['type']);
 
     Task task = Task(
       taskId: doc.id,
-      uid: data['uid'] ?? '',
+      uid: data['uid'],
       type: taskType,
-      title: data['title'] ?? '',
-      categoryIds: List<String>.from(data['categoryIds'] ?? []),
+      title: data['title'],
+      categoryIds: List<String>.from(data['categoryIds']),
     );
 
     switch (taskType) {
@@ -146,7 +147,7 @@ class Task extends Equatable {
           lastCompletedDate: data['lastCompletedDate'] != null
               ? (data['lastCompletedDate'] as Timestamp).toDate()
               : null,
-          isCompleted: data['isCompleted'] ?? false,
+          isCompleted: data['isCompleted'],
         );
 
       case TaskType.todo:
@@ -156,7 +157,10 @@ class Task extends Equatable {
           dueDate: data['dueDate'] != null
               ? (data['dueDate'] as Timestamp).toDate()
               : null,
-          isCompleted: data['isCompleted'] ?? false,
+          lastCompletedDate: data['lastCompletedDate'] != null
+              ? (data['lastCompletedDate'] as Timestamp).toDate()
+              : null,
+          isCompleted: data['isCompleted'],
         );
 
       case TaskType.reward:
@@ -178,7 +182,7 @@ class Task extends Equatable {
       case 'reward':
         return TaskType.reward;
       default:
-        return TaskType.todo;
+        throw FormatException('Invalid task type: $type');
     }
   }
 
@@ -191,7 +195,7 @@ class Task extends Equatable {
       case 'hard':
         return Difficulty.hard;
       default:
-        return Difficulty.medium;
+        throw FormatException('Invalid task difficulty: $difficulty');
     }
   }
 
@@ -204,7 +208,7 @@ class Task extends Equatable {
       case 'monthly':
         return RepeatInterval.monthly;
       default:
-        return RepeatInterval.weekly;
+        throw FormatException('Invalid task repeat interval: $repeat');
     }
   }
 
@@ -238,7 +242,7 @@ class Task extends Equatable {
       map['cost'] = cost;
     }
     if (lastCompletedDate != null) {
-      map['lastCompletedDate'] = lastCompletedDate;
+      map['lastCompletedDate'] = Timestamp.fromDate(lastCompletedDate!);
     }
     return map;
   }

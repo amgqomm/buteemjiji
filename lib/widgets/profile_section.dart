@@ -1,11 +1,8 @@
-// widgets/profile_section.dart
 import 'package:flutter/material.dart';
-import 'package:flutter_bloc/flutter_bloc.dart';
-import '../cubits/auth/auth_cubit.dart';
 import '../models/user_model.dart';
-import '../utils/app_enums.dart';
 import '../utils/theme_constants.dart';
 import '../utils/profile_dialogs.dart';
+import '../extensions/gender_extensions.dart';
 import 'profile_item.dart';
 
 class ProfileSection extends StatelessWidget {
@@ -20,47 +17,54 @@ class ProfileSection extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SingleChildScrollView(
-      child: Column(
-        children: [
-          // Personal Information section
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  'Хувийн мэдээлэл',
-                  style: TextStyle(
-                    color: AppTheme.textSecondary,
-                    fontSize: 14,
-                    fontWeight: FontWeight.bold,
+    return LayoutBuilder(
+      builder: (context, constraints) {
+        return SingleChildScrollView(
+          child: ConstrainedBox(
+            constraints: BoxConstraints(minHeight: constraints.maxHeight),
+            child: IntrinsicHeight(
+              child: Column(
+                children: [
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'Хувийн мэдээлэл',
+                          style: TextStyle(
+                            color: AppTheme.textSecondary,
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                        const SizedBox(height: 8),
+                        _buildPersonalInfoCard(context),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(height: 8),
-                _buildPersonalInfoCard(context),
-              ],
-            ),
-          ),
-
-          // Sign Out Button
-          Padding(
-            padding: const EdgeInsets.symmetric(horizontal: 16.0),
-            child: TextButton(
-              onPressed: onSignOut,
-              style: TextButton.styleFrom(
-                foregroundColor: AppTheme.primaryBlue,
-              ),
-              child: const Center(
-                child: Text(
-                  'Гарах',
-                  style: TextStyle(fontSize: 16),
-                ),
+                  const Spacer(),
+                  Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 16.0),
+                    child: TextButton(
+                      onPressed: onSignOut,
+                      style: TextButton.styleFrom(
+                        foregroundColor: AppTheme.primaryBlue,
+                      ),
+                      child: const Center(
+                        child: Text(
+                          'Гарах',
+                          style: TextStyle(fontSize: 16),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
               ),
             ),
           ),
-        ],
-      ),
+        );
+      },
     );
   }
 
@@ -93,7 +97,7 @@ class ProfileSection extends StatelessWidget {
           const Divider(height: 1, color: AppTheme.darkBackground),
           ProfileItem(
             label: 'Хүйс',
-            value: ProfileDialogs.getGenderText(user.gender),
+            value: user.gender.translation,
             onTap: () => ProfileDialogs.showEditGenderDialog(context, user),
           ),
           const Divider(height: 1, color: AppTheme.darkBackground),

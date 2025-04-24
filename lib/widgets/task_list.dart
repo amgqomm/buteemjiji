@@ -1,4 +1,3 @@
-// widgets/task_list.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import '../cubits/task/task_cubit.dart';
@@ -37,7 +36,7 @@ class TaskList extends StatelessWidget {
           );
         }
 
-        final tasks = context.read<TaskCubit>().getTasksByType(taskType);
+        final tasks = context.read<TaskCubit>().getTasksOfType(taskType);
 
         if (tasks.isEmpty) {
           return EmptyTaskState(

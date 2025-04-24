@@ -24,12 +24,9 @@ class UserService {
         .map((doc) => doc.exists ? AppUser.fromFirestore(doc) : null);
   }
 
-  Future<void> updateUser(String uid) async {
+  Future<void> updateUser(AppUser user) async {
     try {
-      final user = await getUser(uid);
-      if (user == null) throw Exception('User not found');
-
-      await _firestore.collection('users').doc(uid).update(user.toMap());
+      await _firestore.collection('users').doc(user.uid).update(user.toMap());
     } catch (e) {
       throw Exception('Error updating user: ${e.toString()}');
     }

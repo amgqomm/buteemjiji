@@ -20,7 +20,6 @@ class EditTaskScreen extends StatefulWidget {
 class _EditTaskScreenState extends State<EditTaskScreen> {
   late final TextEditingController _titleController;
 
-  // Task properties
   late List<String> selectedCategories;
   late Difficulty difficulty;
   late bool isPositive;
@@ -34,7 +33,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     super.initState();
     _titleController = TextEditingController(text: widget.task.title);
 
-    // Initialize properties from the task
     selectedCategories = List<String>.from(widget.task.categoryIds);
     difficulty = widget.task.difficulty ?? Difficulty.medium;
     isPositive = widget.task.isPositive ?? true;
@@ -89,22 +87,20 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
         break;
     }
 
-    // Update the task
     context.read<TaskCubit>().updateTask(updatedTask);
     context.router.pop();
   }
 
-  // Get title text based on task type
   String get _screenTitle {
     switch (widget.task.type) {
       case TaskType.habit:
-        return 'Зуршил засах'; // Edit Habit
+        return 'Зуршил засах';
       case TaskType.daily:
-        return 'Даалгавар засах'; // Edit Daily
+        return 'Даалгавар засах';
       case TaskType.todo:
-        return 'Зорилго засах'; // Edit To-do
+        return 'Зорилго засах';
       case TaskType.reward:
-        return 'Урамшуулал засах'; // Edit Reward
+        return 'Урамшуулал засах';
     }
   }
 
@@ -142,7 +138,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
 
             const SizedBox(height: 24),
 
-            // Task type specific fields
             _buildTaskTypeSpecificFields(),
 
             const SizedBox(height: 24),
@@ -163,7 +158,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
               ),
             ),
 
-            // Delete Button
             const SizedBox(height: 16),
             TextButton(
               onPressed: () {
@@ -319,7 +313,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
 
         const SizedBox(height: 24),
 
-        // Difficulty
         const Text(
           'Хүндрэл',
           style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
@@ -343,7 +336,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
 
         const SizedBox(height: 24),
 
-        // Categories
         const Text(
           'Төрөл',
           style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
@@ -510,7 +502,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
 
         const SizedBox(height: 24),
 
-        // Categories
         const Text(
           'Төрөл',
           style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
@@ -538,13 +529,11 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
   List<int> _getIntervalOptions() {
     switch (repeat) {
       case RepeatInterval.daily:
-        return List.generate(10, (index) => index + 1); // 1-10 days
-      case RepeatInterval.weekly:
-        return List.generate(4, (index) => index + 1); // 1-4 weeks
-      case RepeatInterval.monthly:
-        return List.generate(12, (index) => index + 1); // 1-12 months
-      default:
         return List.generate(10, (index) => index + 1);
+      case RepeatInterval.weekly:
+        return List.generate(4, (index) => index + 1);
+      case RepeatInterval.monthly:
+        return List.generate(12, (index) => index + 1);
     }
   }
 
@@ -552,7 +541,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Due date
         const Text(
           'Хугацаа',
           style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
@@ -620,7 +608,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
 
         const SizedBox(height: 24),
 
-        // Difficulty
         const Text(
           'Хүндрэл',
           style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
@@ -644,9 +631,8 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
 
         const SizedBox(height: 24),
 
-        // Categories
         const Text(
-          'Төрөл', // Category in Mongolian
+          'Төрөл',
           style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
         ),
         const SizedBox(height: 8),
@@ -673,7 +659,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Cost
         const Text(
           'Үнэ',
           style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),
@@ -747,7 +732,6 @@ class _EditTaskScreenState extends State<EditTaskScreen> {
 
         const SizedBox(height: 24),
 
-        // Categories
         const Text(
           'Төрөл',
           style: TextStyle(fontSize: 14, color: AppTheme.textSecondary),

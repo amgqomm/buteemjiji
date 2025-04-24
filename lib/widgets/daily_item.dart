@@ -1,10 +1,10 @@
-// widgets/daily_item.dart
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:auto_route/auto_route.dart';
 import '../cubits/task/task_cubit.dart';
 import '../models/task_model.dart';
 import '../routes/app_router.dart';
+import '../utils/theme_constants.dart';
 
 class DailyItem extends StatelessWidget {
   final Task task;
@@ -21,9 +21,15 @@ class DailyItem extends StatelessWidget {
       },
       child: Card(
         margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+        shape: RoundedRectangleBorder(
+          side: BorderSide(color: AppTheme.dailyPurple, width: 1.5),
+          borderRadius: BorderRadius.circular(12),
+        ),
         child: ListTile(
           leading: Checkbox(
             value: isCompleted,
+            checkColor: AppTheme.cardBackground,
+            activeColor: AppTheme.dailyPurple,
             onChanged: (bool? value) {
               if (value == true && !isCompleted) {
                 context.read<TaskCubit>().completeTask(task);
@@ -35,7 +41,7 @@ class DailyItem extends StatelessWidget {
             style: isCompleted
                 ? const TextStyle(
               decoration: TextDecoration.lineThrough,
-              color: Colors.grey,
+              color: AppTheme.dailyPurple,
             )
                 : null,
           ),

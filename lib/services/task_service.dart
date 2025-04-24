@@ -7,16 +7,6 @@ class TaskService {
   final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   final UserService _userService = UserService();
 
-  // Stream<List<Task>> streamTasks(String uid) {
-  //   return _firestore
-  //       .collection('tasks')
-  //       .where('uid', isEqualTo: uid)
-  //       .snapshots()
-  //       .map((snapshot) => snapshot.docs
-  //       .map((doc) => Task.fromFirestore(doc))
-  //       .toList());
-  // }
-
   Stream<List<Task>> streamTasksByType(String uid, TaskType type) {
     String typeString = type.toString().split('.').last;
 
@@ -146,6 +136,7 @@ class TaskService {
         case TaskType.todo:
           if (!isPenalty) {
             await updateTask(task.copyWith(isCompleted: true));
+
             switch (task.difficulty) {
               case Difficulty.easy:
                 expChange = 3;
@@ -178,9 +169,6 @@ class TaskService {
                 healthChange = -2;
             }
           }
-          await updateTask(
-            task.copyWith(dueDate: DateTime.now().add(const Duration(days: 1))),
-          );
           break;
 
         case TaskType.reward:
@@ -203,22 +191,16 @@ class TaskService {
   Future<void> resetDailyTasks(String uid) async {
     try {
       final dailyTasks =
-          //await getTasksByType(uid: uid, type: TaskType.daily, isCompleted: true);
-          await _firestore
-              .collection('tasks')
-              .where('uid', isEqualTo: uid)
-              .where('type', isEqualTo: 'daily')
-              .where('isCompleted', isEqualTo: true)
-              .get();
+          await getTasksByType(uid: uid, type: TaskType.daily, isCompleted: true);
 
       final batch = _firestore.batch();
       final now = DateTime.now();
 
-      for (final doc in dailyTasks.docs) {
-        final task = Task.fromFirestore(doc);
-
+      for (final task in dailyTasks) {
         if (shouldResetTask(task, now)) {
-          batch.update(doc.reference, {'isCompleted': false});
+          batch.update(_firestore.collection('tasks').doc(task.taskId),
+              {'isCompleted': false}
+          );
         }
       }
 
@@ -232,30 +214,34 @@ class TaskService {
     final lastCompletedDate = task.lastCompletedDate!;
     final interval = task.interval!;
 
+    final lastDate = DateTime(lastCompletedDate.year, lastCompletedDate.month, lastCompletedDate.day);
+    final today = DateTime(now.year, now.month, now.day);
+
     switch (task.repeat) {
       case RepeatInterval.daily:
-        final daysSinceCompletion = now.difference(lastCompletedDate).inDays;
-        return daysSinceCompletion >= interval;
+
+        final dayDiff = today.difference(lastDate).inDays;
+        return dayDiff >= interval;
 
       case RepeatInterval.weekly:
-        final weeksSinceCompletion =
-            now.difference(lastCompletedDate).inDays / 7;
-        return weeksSinceCompletion.floor() >= interval;
+        final weekDifference = today.difference(lastDate).inDays ~/ 7;
+        return weekDifference >= interval;
 
       case RepeatInterval.monthly:
-        DateTime targetDate = DateTime(
-          lastCompletedDate.year,
-          lastCompletedDate.month + interval,
-          lastCompletedDate.day,
-        );
-        while (targetDate.month > (lastCompletedDate.month + interval) % 12) {
-          targetDate = targetDate.subtract(const Duration(days: 1));
-        }
-        return now.isAfter(targetDate) || now.isAtSameMomentAs(targetDate);
+        final yearDiff = today.year - lastDate.year;
+        final monthDiff = today.month - lastDate.month + (yearDiff * 12);
+        return monthDiff >= interval &&
+            (today.day >= lastDate.day || _isEndOfMonth(today, lastDate));
 
       default:
         return false;
     }
+  }
+
+  bool _isEndOfMonth(DateTime current, DateTime original) {
+    final nextMonth = DateTime(original.year, original.month + 1, 1);
+    final lastDayOfOriginalMonth = nextMonth.subtract(const Duration(days: 1)).day;
+    return original.day == lastDayOfOriginalMonth;
   }
 
   Future<void> penalizeMissedDailyTasks(String uid) async {
@@ -267,19 +253,19 @@ class TaskService {
       );
 
       final now = DateTime.now();
-      //final batch = _firestore.batch();
+      final List<Task> tasksToProcessAfterBatch = [];
 
-      // for (final doc in dailyTasks.docs) {
-      //   final task = Task.fromFirestore(doc);
       for (final task in dailyTasks) {
         if (task.lastCompletedDate == null) continue;
 
         if (shouldResetTask(task, now)) {
-          await completeTask(task, isPenalty: true);
+          tasksToProcessAfterBatch.add(task);
         }
       }
 
-      //await batch.commit();
+      for (final task in tasksToProcessAfterBatch) {
+        await completeTask(task, isPenalty: true);
+      }
     } catch (e) {
       throw Exception('Error penalizing missed daily tasks: ${e.toString()}');
     }
@@ -294,31 +280,27 @@ class TaskService {
       );
 
       final now = DateTime.now();
+      final List<Task> tasksToProcessAfterBatch = [];
 
-      // for (final doc in todoTasks.docs) {
-      //   final task = Task.fromFirestore(doc);
       for (final task in todoTasks) {
         if (task.dueDate == null) continue;
 
-        if (now.isAfter(task.dueDate!)) {
-          // Apply penalty
-          await completeTask(task, isPenalty: true);
+        if (now.isAfter(task.dueDate!) &&
+            (task.lastCompletedDate == null ||
+                task.lastCompletedDate!.year != now.year ||
+                task.lastCompletedDate!.month != now.month ||
+                task.lastCompletedDate!.day != now.day)) {
+          tasksToProcessAfterBatch.add(task);
         }
+      }
+
+      for (final task in tasksToProcessAfterBatch) {
+        await completeTask(task, isPenalty: true);
       }
     } catch (e) {
       throw Exception('Error penalizing overdue todo tasks: ${e.toString()}');
     }
   }
-
-  // Future<QuerySnapshot> getUncompletedTasksByType(String uid, TaskType type) {
-  //   final typeString = type.toString().split('.').last;
-  //   return _firestore
-  //       .collection('tasks')
-  //       .where('uid', isEqualTo: uid)
-  //       .where('type', isEqualTo: typeString)
-  //       .where('isCompleted', isEqualTo: false)
-  //       .get();
-  // }
 
   Future<List<Task>> getTasksByType({
     required String uid,
@@ -327,21 +309,17 @@ class TaskService {
   }) async {
     final typeString = type.toString().split('.').last;
 
-    // Start with basic query
     Query query = _firestore
         .collection('tasks')
         .where('uid', isEqualTo: uid)
         .where('type', isEqualTo: typeString);
 
-    // Add additional filters when specified
     if (isCompleted != null) {
       query = query.where('isCompleted', isEqualTo: isCompleted);
     }
 
-    // Execute the query
     final snapshot = await query.get();
 
-    // Convert to Task objects
     List<Task> tasks =
         snapshot.docs.map((doc) => Task.fromFirestore(doc)).toList();
 

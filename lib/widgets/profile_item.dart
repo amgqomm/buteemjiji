@@ -1,4 +1,3 @@
-// widgets/profile_item.dart
 import 'package:flutter/material.dart';
 import '../utils/theme_constants.dart';
 
@@ -25,11 +24,11 @@ class ProfileItem extends StatelessWidget {
         child: Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: const TextStyle(color: Colors.white)),
+            Text(label, style: const TextStyle(color: AppTheme.textPrimary)),
             Text(
               value,
               style: TextStyle(
-                color: isPassword ? AppTheme.textSecondary : Colors.white,
+                color: isPassword ? AppTheme.textSecondary : AppTheme.textPrimary,
                 fontWeight: FontWeight.w500,
               ),
             ),

@@ -38,7 +38,5 @@ dev_dependencies:
 
 flutter:
   assets:
-    - lib/assets/images/male.jpg
-    - lib/assets/images/female.jpg
-    - lib/assets/images/other.jpg
+    - assets/images/
   uses-material-design: true

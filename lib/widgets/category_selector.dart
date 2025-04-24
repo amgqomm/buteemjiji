@@ -2,7 +2,6 @@ import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
 import '../models/category_model.dart';
 import '../utils/theme_constants.dart';
-import '../extensions/color_extensions.dart';
 
 class CategorySelector extends StatefulWidget {
   final List<String> selectedCategoryIds;

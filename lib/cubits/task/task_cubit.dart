@@ -18,12 +18,10 @@ class TaskCubit extends Cubit<TaskState> {
   };
 
   TaskCubit({required TaskService taskService})
-      : _taskService = taskService,
-        super(TaskState.initial());
+    : _taskService = taskService,
+      super(TaskState.initial());
 
-  List<Task> get allTasks => [...state.habits, ...state.dailies, ...state.todos, ...state.rewards];
-
-  List<Task> getTasksByType(TaskType type) {
+  List<Task> getTasksOfType(TaskType type) {
     switch (type) {
       case TaskType.habit:
         return state.habits;
@@ -36,7 +34,7 @@ class TaskCubit extends Cubit<TaskState> {
     }
   }
 
-  void loadTasks(String uid) {
+  Future<void> loadTasks(String uid) async {
     try {
       emit(TaskState.loading());
 
@@ -45,25 +43,32 @@ class TaskCubit extends Cubit<TaskState> {
       for (var type in TaskType.values) {
         _subscriptions[type] = _taskService
             .streamTasksByType(uid, type)
-            .listen((tasks) {
-          _taskCollections[type]!.clear();
-          _taskCollections[type]!.addAll(tasks);
-          _emitUpdatedState();
-        });
+            .listen(
+              (tasks) {
+                _taskCollections[type]!
+                  ..clear()
+                  ..addAll(tasks);
+                _emitUpdatedState();
+              },
+              onError: (error) {
+                emit(TaskState.error('Error fetching tasks for $type: $error'));
+              },
+            );
       }
     } catch (e) {
       emit(TaskState.error(e.toString()));
     }
   }
 
-  void _emitUpdatedState(
-      ) {
-    emit(TaskState.loaded(
-      habits: List.unmodifiable(_taskCollections[TaskType.habit]!),
-      dailies: List.unmodifiable(_taskCollections[TaskType.daily]!),
-      todos: List.unmodifiable(_taskCollections[TaskType.todo]!),
-      rewards: List.unmodifiable(_taskCollections[TaskType.reward]!),
-    ));
+  void _emitUpdatedState() {
+    emit(
+      TaskState.loaded(
+        habits: List.unmodifiable(_taskCollections[TaskType.habit]!),
+        dailies: List.unmodifiable(_taskCollections[TaskType.daily]!),
+        todos: List.unmodifiable(_taskCollections[TaskType.todo]!),
+        rewards: List.unmodifiable(_taskCollections[TaskType.reward]!),
+      ),
+    );
   }
 
   Future<void> _executeServiceCall(Future<void> Function() serviceCall) async {
@@ -96,6 +101,14 @@ class TaskCubit extends Cubit<TaskState> {
 
   Future<void> resetDailyTasks(String uid) async {
     await _executeServiceCall(() => _taskService.resetDailyTasks(uid));
+  }
+
+  Future<void> penalizeMissedDailyTasks(String uid) async {
+    await _executeServiceCall(() => _taskService.penalizeMissedDailyTasks(uid));
+  }
+
+  Future<void> penalizeOverdueTodoTasks(String uid) async {
+    await _executeServiceCall(() => _taskService.penalizeOverdueTodoTasks(uid));
   }
 
   void _cancelSubscriptions() {

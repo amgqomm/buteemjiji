@@ -14,7 +14,7 @@ class UserCubit extends Cubit<UserState> {
     : _userService = userService,
       super(UserState.initial());
 
-  void loadUser(String uid) {
+  Future<void> loadUser(String uid) async {
     try {
       emit(UserState.loading());
 
@@ -30,8 +30,10 @@ class UserCubit extends Cubit<UserState> {
                 emit(UserState.error('User not found'));
               }
             },
-            onError: (error) {
-              emit(UserState.error(error.toString()));
+            onError: (e) {
+              emit(
+                UserState.error('Stream error: $e'),
+              );
             },
           );
     } catch (e) {
@@ -39,12 +41,11 @@ class UserCubit extends Cubit<UserState> {
     }
   }
 
-  Future<void> updateUser(String uid) async {
+  Future<void> updateUser(AppUser updatedUser) async {
     try {
-      if (state.user == null) {
-        return;
-      }
-      await _userService.updateUser(state.user!.uid);
+      emit(UserState.loading());
+      await _userService.updateUser(updatedUser);
+      emit(UserState.loaded(updatedUser));
     } catch (e) {
       emit(UserState.error(e.toString()));
     }

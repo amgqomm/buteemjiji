@@ -16,11 +16,11 @@ class Category extends Equatable {
 
   factory Category.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
-    final String colorString = data['color'] ?? '';
+    final String colorString = data['color'];
 
     return Category(
       categoryId: doc.id,
-      name: data['name'] ?? '',
+      name: data['name'],
       color: colorString.toColor(),
     );
   }

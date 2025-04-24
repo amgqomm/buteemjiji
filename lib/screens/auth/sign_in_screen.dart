@@ -9,10 +9,10 @@ class SignInScreen extends StatefulWidget {
   const SignInScreen({super.key});
 
   @override
-  _SignInScreenState createState() => _SignInScreenState();
+  SignInScreenState createState() => SignInScreenState();
 }
 
-class _SignInScreenState extends State<SignInScreen> {
+class SignInScreenState extends State<SignInScreen> {
   final _formKey = GlobalKey<FormState>();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
@@ -44,9 +44,9 @@ class _SignInScreenState extends State<SignInScreen> {
           } else if (state.status == AuthStatus.registering) {
             context.router.replace(CompleteSignUpRoute());
           } else if (state.errorMessage != null) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(content: Text(state.errorMessage!)),
-            );
+            ScaffoldMessenger.of(
+              context,
+            ).showSnackBar(SnackBar(content: Text(state.errorMessage!)));
           }
         },
         builder: (context, state) {
@@ -72,9 +72,7 @@ class _SignInScreenState extends State<SignInScreen> {
                       const Text(
                         'Өөрийн гараар бүтээмжээ удирд',
                         textAlign: TextAlign.center,
-                        style: TextStyle(
-                          color: Colors.grey,
-                        ),
+                        style: TextStyle(color: Colors.grey),
                       ),
                       const SizedBox(height: 32),
                       TextFormField(
@@ -89,8 +87,9 @@ class _SignInScreenState extends State<SignInScreen> {
                           if (value == null || value.isEmpty) {
                             return 'Имейл хаягаа оруулна уу?';
                           }
-                          if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$')
-                              .hasMatch(value)) {
+                          if (!RegExp(
+                            r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$',
+                          ).hasMatch(value)) {
                             return 'Хүчинтэй имейл оруулна уу?';
                           }
                           return null;
@@ -104,9 +103,11 @@ class _SignInScreenState extends State<SignInScreen> {
                           labelText: 'Нууц үг',
                           prefixIcon: const Icon(Icons.lock),
                           suffixIcon: IconButton(
-                            icon: Icon(_obscurePassword
-                                ? Icons.visibility
-                                : Icons.visibility_off),
+                            icon: Icon(
+                              _obscurePassword
+                                  ? Icons.visibility
+                                  : Icons.visibility_off,
+                            ),
                             onPressed: () {
                               setState(() {
                                 _obscurePassword = !_obscurePassword;
@@ -128,12 +129,13 @@ class _SignInScreenState extends State<SignInScreen> {
                         style: ElevatedButton.styleFrom(
                           padding: const EdgeInsets.symmetric(vertical: 12),
                         ),
-                        child: state.isLoading
-                            ? const CircularProgressIndicator()
-                            : const Text(
-                          'Нэвтрэх',
-                          style: TextStyle(fontSize: 16),
-                        ),
+                        child:
+                            state.isLoading
+                                ? const CircularProgressIndicator()
+                                : const Text(
+                                  'Нэвтрэх',
+                                  style: TextStyle(fontSize: 16),
+                                ),
                       ),
                       const SizedBox(height: 16),
                       TextButton(

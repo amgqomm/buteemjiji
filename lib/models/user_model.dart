@@ -29,17 +29,19 @@ class AppUser extends Equatable {
 
   factory AppUser.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
+    final gender = _genderFromString(data['gender']);
+
     return AppUser(
         uid: doc.id,
-        username: data['username'] ?? '',
-        email: data['email'] ?? '',
-        gender: _genderFromString(data['gender'] ?? ''),
-        age: data['age'] ?? 0,
-        level: data['level'] ?? 1,
-        healthPoint: data['healthPoint'] ?? 100,
-        expPoint: data['expPoint'] ?? 0,
-        coin: data['coin'] ?? 0,
-        maxExp: data['maxExp'] ?? 100
+        username: data['username'],
+        email: data['email'],
+        gender: gender,
+        age: data['age'],
+        level: data['level'],
+        healthPoint: data['healthPoint'],
+        expPoint: data['expPoint'],
+        coin: data['coin'],
+        maxExp: data['maxExp'],
     );
   }
 
@@ -49,8 +51,10 @@ class AppUser extends Equatable {
         return Gender.male;
       case 'female':
         return Gender.female;
-      default:
+      case 'other':
         return Gender.other;
+      default:
+        throw FormatException('Invalid gender: $gender');
     }
   }
 

@@ -25,7 +25,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   final _formKey = GlobalKey<FormState>();
   final _titleController = TextEditingController();
 
-  // Task properties
   List<String> selectedCategories = [];
   Difficulty difficulty = Difficulty.easy;
   bool isPositive = true;
@@ -81,6 +80,7 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
           categoryIds: selectedCategories,
           difficulty: difficulty,
           dueDate: dueDate,
+          lastCompletedDate: lastCompletedDate,
         );
         break;
       case TaskType.reward:
@@ -291,7 +291,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
         const SizedBox(height: 24),
 
-        // Difficulty
         const Text(
           'Хүндрэл',
           style: TextStyle(
@@ -493,7 +492,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
         const SizedBox(height: 24),
 
-        // Categories
         const Text(
           'Төрөл',
           style: TextStyle(
@@ -524,13 +522,11 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
   List<int> _getIntervalOptions() {
     switch (repeat) {
       case RepeatInterval.daily:
-        return List.generate(10, (index) => index + 1); // 1-10 days
-      case RepeatInterval.weekly:
-        return List.generate(4, (index) => index + 1); // 1-4 weeks
-      case RepeatInterval.monthly:
-        return List.generate(12, (index) => index + 1); // 1-12 months
-      default:
         return List.generate(10, (index) => index + 1);
+      case RepeatInterval.weekly:
+        return List.generate(4, (index) => index + 1);
+      case RepeatInterval.monthly:
+        return List.generate(12, (index) => index + 1);
     }
   }
 
@@ -538,7 +534,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        // Due date
         const Text(
           'Хугацаа',
           style: TextStyle(
@@ -609,7 +604,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
         const SizedBox(height: 24),
 
-        // Difficulty
         const Text(
           'Хүндрэл',
           style: TextStyle(
@@ -636,7 +630,6 @@ class _AddTaskScreenState extends State<AddTaskScreen> {
 
         const SizedBox(height: 24),
 
-        // Categories
         const Text(
           'Төрөл',
           style: TextStyle(

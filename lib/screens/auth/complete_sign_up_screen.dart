@@ -4,16 +4,17 @@ import 'package:auto_route/auto_route.dart';
 import '../../cubits/auth/auth_cubit.dart';
 import '../../routes/app_router.dart';
 import '../../utils/app_enums.dart';
+import '../../extensions/gender_extensions.dart';
 
 @RoutePage()
 class CompleteSignUpScreen extends StatefulWidget {
   const CompleteSignUpScreen({super.key});
 
   @override
-  _CompleteSignUpScreenState createState() => _CompleteSignUpScreenState();
+  CompleteSignUpScreenState createState() => CompleteSignUpScreenState();
 }
 
-class _CompleteSignUpScreenState extends State<CompleteSignUpScreen> {
+class CompleteSignUpScreenState extends State<CompleteSignUpScreen> {
   final _formKey = GlobalKey<FormState>();
   final _usernameController = TextEditingController();
   final _ageController = TextEditingController();
@@ -28,11 +29,11 @@ class _CompleteSignUpScreenState extends State<CompleteSignUpScreen> {
 
   void _completeSignUp() {
     if (_formKey.currentState!.validate()) {
-      final age = int.tryParse(_ageController.text) ?? 0;
+      final age = int.tryParse(_ageController.text);
 
       context.read<AuthCubit>().completeUserProfile(
         username: _usernameController.text.trim(),
-        age: age,
+        age: age!,
         gender: _selectedGender,
       );
     }
@@ -132,7 +133,7 @@ class _CompleteSignUpScreenState extends State<CompleteSignUpScreen> {
                             Gender.values.map((Gender gender) {
                               return DropdownMenuItem<Gender>(
                                 value: gender,
-                                child: Text(genderTranslations[gender]!),
+                                child: Text(gender.translation),
                               );
                             }).toList(),
                         onChanged: (Gender? value) {
@@ -168,9 +169,3 @@ class _CompleteSignUpScreenState extends State<CompleteSignUpScreen> {
     );
   }
 }
-
-final Map<Gender, String> genderTranslations = {
-  Gender.male: 'Эр',
-  Gender.female: 'Эм',
-  Gender.other: 'Бусад',
-};

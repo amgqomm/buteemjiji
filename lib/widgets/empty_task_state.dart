@@ -20,11 +20,11 @@ class EmptyTaskState extends StatelessWidget {
     switch (taskType) {
       case TaskType.habit:
         message = 'Эерег зуршил суулгаж, сөрөг зуршлаасаа сал';
-        iconData = Icons.sync;
+        iconData = Icons.assignment_outlined;
         break;
       case TaskType.daily:
         message = 'Өдөр тутмын бүтээмжээ удирд';
-        iconData = Icons.calendar_today;
+        iconData = Icons.calendar_today_outlined;
         break;
       case TaskType.todo:
         message = 'Хугацаатай зорилгоо төлөвлө';
@@ -32,7 +32,7 @@ class EmptyTaskState extends StatelessWidget {
         break;
       case TaskType.reward:
         message = 'Өөрийгөө урамшуул';
-        iconData = Icons.emoji_events;
+        iconData = Icons.emoji_events_outlined;
         break;
     }
 
@@ -69,7 +69,7 @@ class EmptyTaskState extends StatelessWidget {
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.bold,
-                color: Colors.white,
+                color: AppTheme.textPrimary,
               ),
             ),
             const SizedBox(height: 8),
