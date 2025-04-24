@@ -1,79 +1,45 @@
 part of 'auth_cubit.dart';
 
-abstract class AuthState extends Equatable {
-  const AuthState();
+enum AuthStatus { initial, authenticated, unauthenticated, registering }
+
+class AuthState extends Equatable {
+  final AuthStatus status;
+  final User? user;
+  final String? errorMessage;
+  final bool isLoading;
+
+  const AuthState({
+    this.status = AuthStatus.initial,
+    this.user,
+    this.errorMessage,
+    this.isLoading = false,
+  });
+
+  factory AuthState.initial() => AuthState();
+
+  factory AuthState.authenticated(User user) =>
+      AuthState(status: AuthStatus.authenticated, user: user);
+
+  factory AuthState.unauthenticated([String? errorMessage]) =>
+      AuthState(status: AuthStatus.unauthenticated, errorMessage: errorMessage);
+
+  factory AuthState.registering(User user) =>
+      AuthState(status: AuthStatus.registering, user: user);
+
+  AuthState copyWith({
+    AuthStatus? status,
+    User? user,
+    String? errorMessage,
+    bool? isLoading,
+  }) {
+    return AuthState(
+      status: status ?? this.status,
+      user: user ?? this.user,
+      errorMessage: errorMessage ?? this.errorMessage,
+      isLoading: isLoading ?? this.isLoading,
+    );
+  }
 
   @override
-  List<Object?> get props => [];
+  List<Object?> get props => [status, user?.uid, errorMessage, isLoading];
 }
-
-class AuthInitial extends AuthState {}
-
-class AuthLoading extends AuthState {}
-
-// class Authenticated extends AuthState {
-
-class AuthAuthenticated extends AuthState {
-  final AppUser user;
-
-  // const Authenticated(this.user);
-
-  const AuthAuthenticated(this.user);
-
-  @override
-  List<Object> get props => [user];
-}
-
-// class PartiallyAuthenticated extends AuthState {
-//   final User user;
-//
-//   const PartiallyAuthenticated(this.user);
-//
-//   @override
-//   List<Object> get props => [user];
-// }
-
-// class Unauthenticated extends AuthState {}
-
-class AuthUnauthenticated extends AuthState {}
-
-class AuthRegistered extends AuthState {
-  final String email;
-  final String uid;
-
-  const AuthRegistered({required this.email, required this.uid});
-
-  @override
-  List<Object?> get props => [email, uid];
-}
-
-
-class AuthError extends AuthState {
-  final String message;
-
-  const AuthError(this.message);
-
-  @override
-  List<Object> get props => [message];
-}
-
-// class UsernameAvailabilityChecked extends AuthState {
-//   final String username;
-//   final bool isAvailable;
-//
-//   const UsernameAvailabilityChecked(this.username, this.isAvailable);
-//
-//   @override
-//   List<Object> get props => [username, isAvailable];
-// }
-//
-// class UsernameCheckError extends AuthState {
-//   final String message;
-//   final AppUser? appUser;
-//   final User? firebaseUser;
-//
-//   const UsernameCheckError(this.message, [this.appUser, this.firebaseUser]);
-//
-//   @override
-//   List<Object?> get props => [message, appUser, firebaseUser];
-// }

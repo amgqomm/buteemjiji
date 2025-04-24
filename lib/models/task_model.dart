@@ -1,54 +1,170 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart';
 import '../utils/app_enums.dart';
 
-class Task {
+class Task extends Equatable {
   final String taskId;
   final String uid;
   final TaskType type;
   final String title;
   final List<String> categoryIds;
-  final TaskDifficulty difficulty;
-  final bool isPositive;
-  final bool isCompleted;
-  final bool isRepeatable;
-  final RepeatInterval repeat;
-  final int interval;
+  final Difficulty? difficulty;
+  final bool? isPositive;
+  final bool? isCompleted;
+  final RepeatInterval? repeat;
+  final int? interval;
   final DateTime? dueDate;
-  final int cost;
+  final int? cost;
+  final DateTime? lastCompletedDate;
 
-  Task({
+  const Task({
     required this.taskId,
     required this.uid,
     required this.type,
     required this.title,
     this.categoryIds = const [],
-    this.difficulty = TaskDifficulty.medium,
-    this.isPositive = true,
+    this.difficulty,
+    this.isPositive,
     this.isCompleted = false,
-    this.isRepeatable = false,
-    this.repeat = RepeatInterval.none,
-    this.interval = 1,
+    this.repeat,
+    this.interval,
     this.dueDate,
-    this.cost = 0,
+    this.cost,
+    this.lastCompletedDate,
   });
 
-  factory Task.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
-    final data = doc.data()!;
+  factory Task.habit({
+    required String taskId,
+    required String uid,
+    required String title,
+    List<String> categoryIds = const [],
+    required Difficulty difficulty,
+    required bool isPositive,
+  }) {
     return Task(
+      taskId: taskId,
+      uid: uid,
+      type: TaskType.habit,
+      title: title,
+      categoryIds: categoryIds,
+      difficulty: difficulty,
+      isPositive: isPositive,
+    );
+  }
+
+  factory Task.daily({
+    required String taskId,
+    required String uid,
+    required String title,
+    List<String> categoryIds = const [],
+    required Difficulty difficulty,
+    bool isCompleted = false,
+    required RepeatInterval repeat,
+    required int interval,
+    required DateTime lastCompletedDate,
+  }) {
+    return Task(
+      taskId: taskId,
+      uid: uid,
+      type: TaskType.daily,
+      title: title,
+      categoryIds: categoryIds,
+      difficulty: difficulty,
+      isCompleted: isCompleted,
+      repeat: repeat,
+      interval: interval,
+      lastCompletedDate: lastCompletedDate,
+    );
+  }
+
+  factory Task.todo({
+    required String taskId,
+    required String uid,
+    required String title,
+    List<String> categoryIds = const [],
+    required Difficulty difficulty,
+    bool isCompleted = false,
+    required DateTime dueDate,
+  }) {
+    return Task(
+      taskId: taskId,
+      uid: uid,
+      type: TaskType.todo,
+      title: title,
+      categoryIds: categoryIds,
+      difficulty: difficulty,
+      isCompleted: isCompleted,
+      dueDate: dueDate,
+    );
+  }
+
+  factory Task.reward({
+    required String taskId,
+    required String uid,
+    required String title,
+    List<String> categoryIds = const [],
+    required int cost,
+  }) {
+    return Task(
+      taskId: taskId,
+      uid: uid,
+      type: TaskType.reward,
+      title: title,
+      categoryIds: categoryIds,
+      cost: cost,
+    );
+  }
+
+  factory Task.fromFirestore(DocumentSnapshot doc) {
+    final data = doc.data() as Map<String, dynamic>;
+
+    final taskType = _taskTypeFromString(data['type'] ?? 'todo');
+
+    Task task = Task(
       taskId: doc.id,
       uid: data['uid'] ?? '',
-      type: _taskTypeFromString(data['type'] ?? 'todo'),
-      title: data['title'] ?? 'Untitled Task',
-      categoryIds: List<String>.from(data['categories'] ?? []),
-      difficulty: _difficultyFromString(data['difficulty'] ?? 'medium'),
-      isPositive: data['isPositive'] ?? true,
-      isCompleted: data['isCompleted'] ?? false,
-      isRepeatable: data['isRepeatable'] ?? false,
-      repeat: _repeatIntervalFromString(data['repeat'] ?? 'none'),
-      interval: data['interval'] ?? 1,
-      dueDate: data['dueDate'] != null ? (data['dueDate'] as Timestamp).toDate() : null,
-      cost: data['cost'] ?? 0,
+      type: taskType,
+      title: data['title'] ?? '',
+      categoryIds: List<String>.from(data['categoryIds'] ?? []),
     );
+
+    switch (taskType) {
+      case TaskType.habit:
+        return task.copyWith(
+          difficulty: data['difficulty'] != null ?
+          _difficultyFromString(data['difficulty']) : null,
+          isPositive: data['isPositive'],
+        );
+
+      case TaskType.daily:
+        return task.copyWith(
+          difficulty: data['difficulty'] != null ?
+          _difficultyFromString(data['difficulty']) : null,
+          repeat: data['repeat'] != null ?
+          _repeatIntervalFromString(data['repeat']) : null,
+          interval: data['interval'],
+          lastCompletedDate: data['lastCompletedDate'] != null
+              ? (data['lastCompletedDate'] as Timestamp).toDate()
+              : null,
+          isCompleted: data['isCompleted'] ?? false,
+        );
+
+      case TaskType.todo:
+        return task.copyWith(
+          difficulty: data['difficulty'] != null ?
+          _difficultyFromString(data['difficulty']) : null,
+          dueDate: data['dueDate'] != null
+              ? (data['dueDate'] as Timestamp).toDate()
+              : null,
+          isCompleted: data['isCompleted'] ?? false,
+        );
+
+      case TaskType.reward:
+        return task.copyWith(
+          cost: data['cost'],
+        );
+    }
+
   }
 
   static TaskType _taskTypeFromString(String type) {
@@ -57,6 +173,8 @@ class Task {
         return TaskType.habit;
       case 'daily':
         return TaskType.daily;
+      case 'todo':
+        return TaskType.todo;
       case 'reward':
         return TaskType.reward;
       default:
@@ -64,14 +182,16 @@ class Task {
     }
   }
 
-  static TaskDifficulty _difficultyFromString(String difficulty) {
+  static Difficulty _difficultyFromString(String difficulty) {
     switch (difficulty.toLowerCase()) {
       case 'easy':
-        return TaskDifficulty.easy;
+        return Difficulty.easy;
+      case 'medium':
+        return Difficulty.medium;
       case 'hard':
-        return TaskDifficulty.hard;
+        return Difficulty.hard;
       default:
-        return TaskDifficulty.medium;
+        return Difficulty.medium;
     }
   }
 
@@ -84,25 +204,43 @@ class Task {
       case 'monthly':
         return RepeatInterval.monthly;
       default:
-        return RepeatInterval.none;
+        return RepeatInterval.weekly;
     }
   }
 
   Map<String, dynamic> toMap() {
-    return {
+    final map = <String, dynamic>{
       'uid': uid,
       'type': type.toString().split('.').last,
       'title': title,
-      'categories': categoryIds,
-      'difficulty': difficulty.toString().split('.').last,
-      'isPositive': isPositive,
-      'isCompleted': isCompleted,
-      'isRepeatable': isRepeatable,
-      'repeat': repeat.toString().split('.').last,
-      'interval': interval,
-      'dueDate': dueDate != null ? Timestamp.fromDate(dueDate!) : null,
-      'cost': cost,
+      'categoryIds': categoryIds,
     };
+
+    if (difficulty != null) {
+      map['difficulty'] = difficulty.toString().split('.').last;
+    }
+    if (isPositive != null) {
+      map['isPositive'] = isPositive;
+    }
+    if (isCompleted != null) {
+      map['isCompleted'] = isCompleted;
+    }
+    if (repeat != null) {
+      map['repeat'] = repeat.toString().split('.').last;
+    }
+    if (interval != null) {
+      map['interval'] = interval;
+    }
+    if (dueDate != null) {
+      map['dueDate'] = Timestamp.fromDate(dueDate!);
+    }
+    if (cost != null) {
+      map['cost'] = cost;
+    }
+    if (lastCompletedDate != null) {
+      map['lastCompletedDate'] = lastCompletedDate;
+    }
+    return map;
   }
 
   Task copyWith({
@@ -111,14 +249,14 @@ class Task {
     TaskType? type,
     String? title,
     List<String>? categoryIds,
-    TaskDifficulty? difficulty,
+    Difficulty? difficulty,
     bool? isPositive,
     bool? isCompleted,
-    bool? isRepeatable,
     RepeatInterval? repeat,
     int? interval,
     DateTime? dueDate,
     int? cost,
+    DateTime? lastCompletedDate,
   }) {
     return Task(
       taskId: taskId ?? this.taskId,
@@ -129,11 +267,18 @@ class Task {
       difficulty: difficulty ?? this.difficulty,
       isPositive: isPositive ?? this.isPositive,
       isCompleted: isCompleted ?? this.isCompleted,
-      isRepeatable: isRepeatable ?? this.isRepeatable,
       repeat: repeat ?? this.repeat,
       interval: interval ?? this.interval,
       dueDate: dueDate ?? this.dueDate,
       cost: cost ?? this.cost,
+      lastCompletedDate: lastCompletedDate ?? this.lastCompletedDate,
     );
   }
+
+  @override
+  List<Object?> get props => [
+    taskId, uid, type, title, categoryIds,
+    difficulty, isPositive, isCompleted,
+    repeat, interval, dueDate, cost, lastCompletedDate,
+  ];
 }

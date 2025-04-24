@@ -1,199 +1,136 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:firebase_core/firebase_core.dart';
-import 'cubits/auth/auth_cubit.dart';
 import 'routes/app_router.dart';
-// import 'firebase_options.dart';
-
-// Future<void> main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   await Firebase.initializeApp(
-//     options: DefaultFirebaseOptions.currentPlatform,
-//   );
-//   runApp(const MyApp());
-// }
-//
-// class MyApp extends StatelessWidget {
-//   const MyApp({super.key});
-//
-//   // This widget is the root of your application.
-//   @override
-//   Widget build(BuildContext context) {
-//     return MaterialApp(
-//       title: 'Flutter Demo',
-//       theme: ThemeData(
-//         colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-//       ),
-//       home: const MyHomePage(title: 'Flutter Demo Home Page'),
-//     );
-//   }
-// }
-//
-// class MyHomePage extends StatefulWidget {
-//   const MyHomePage({super.key, required this.title});
-//
-//   final String title;
-//
-//   @override
-//   State<MyHomePage> createState() => _MyHomePageState();
-// }
-//
-// class _MyHomePageState extends State<MyHomePage> {
-//   int _counter = 0;
-//
-//   void _incrementCounter() {
-//     setState(() {
-//       _counter++;
-//     });
-//   }
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Scaffold(
-//       appBar: AppBar(
-//         backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-//         title: Text(widget.title),
-//       ),
-//       body: Center(
-//         child: Column(
-//           mainAxisAlignment: MainAxisAlignment.center,
-//           children: <Widget>[
-//             const Text('You have pushed the button this many times:'),
-//             Text(
-//               '$_counter',
-//               style: Theme.of(context).textTheme.headlineMedium,
-//             ),
-//           ],
-//         ),
-//       ),
-//       floatingActionButton: FloatingActionButton(
-//         onPressed: _incrementCounter,
-//         tooltip: 'Increment',
-//         child: const Icon(Icons.add),
-//       ), // This trailing comma makes auto-formatting nicer for build methods.
-//     );
-//   }
-// }
-
-// Future<void> main() async {
-//   WidgetsFlutterBinding.ensureInitialized();
-//   await Firebase.initializeApp();
-//
-//   runApp(MyApp());
-// }
-//
-// class MyApp extends StatelessWidget {
-//   MyApp({Key? key}) : super(key: key);
-//
-//   final _appRouter = AppRouter();
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return MultiRepositoryProvider(
-//       providers: [
-//         RepositoryProvider<AuthService>(
-//           create: (context) => AuthService(),
-//         ),
-//       ],
-//       child: MultiBlocProvider(
-//         providers: [
-//           BlocProvider<AuthCubit>(
-//             create: (context) => AuthCubit(
-//               authService: context.read<AuthService>(),
-//             ),
-//           ),
-//         ],
-//         child: MaterialApp.router(
-//           title: 'Productivity Hero',
-//           theme: ThemeData(
-//             primarySwatch: Colors.purple,
-//             scaffoldBackgroundColor: Colors.grey[50],
-//             appBarTheme: const AppBarTheme(
-//               elevation: 0,
-//               centerTitle: true,
-//             ),
-//             elevatedButtonTheme: ElevatedButtonThemeData(
-//               style: ElevatedButton.styleFrom(
-//                 elevation: 0,
-//                 shape: RoundedRectangleBorder(
-//                   borderRadius: BorderRadius.circular(8),
-//                 ),
-//               ),
-//             ),
-//             inputDecorationTheme: InputDecorationTheme(
-//               filled: true,
-//               fillColor: Colors.white,
-//               border: OutlineInputBorder(
-//                 borderRadius: BorderRadius.circular(8),
-//                 borderSide: BorderSide(color: Colors.grey[300]!),
-//               ),
-//               enabledBorder: OutlineInputBorder(
-//                 borderRadius: BorderRadius.circular(8),
-//                 borderSide: BorderSide(color: Colors.grey[300]!),
-//               ),
-//             ),
-//           ),
-//           routerConfig: _appRouter.config(),
-//         ),
-//       ),
-//     );
-//   }
-// }
+import 'services/auth_service.dart';
+import 'services/user_service.dart';
+import 'services/task_service.dart';
+import 'cubits/auth/auth_cubit.dart';
+import 'cubits/user/user_cubit.dart';
+import 'cubits/task/task_cubit.dart';
+import 'utils/theme_constants.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await Firebase.initializeApp();
-  runApp(MyApp());
+  runApp(const MyApp());
 }
 
 class MyApp extends StatefulWidget {
-  MyApp({Key? key}) : super(key: key);
+  const MyApp({super.key});
 
   @override
-  _MyAppState createState() => _MyAppState();
+  State<MyApp> createState() => _MyAppState();
 }
 
 class _MyAppState extends State<MyApp> {
+  final _authService = AuthService();
+  final _userService = UserService();
+  final _taskService = TaskService();
+
   final _appRouter = AppRouter();
-  late AuthCubit _authCubit;
-
-  @override
-  void initState() {
-    super.initState();
-    _authCubit = AuthCubit();
-  }
-
-  @override
-  void dispose() {
-    _authCubit.close();
-    super.dispose();
-  }
 
   @override
   Widget build(BuildContext context) {
     return MultiBlocProvider(
       providers: [
-        BlocProvider<AuthCubit>.value(value: _authCubit),
-        // BlocProvider<TaskCubit>(
-        //   create: (context) {
-        //     final authState = context.read<AuthCubit>().state;
-        //     if (authState is AuthAuthenticated) {
-        //       return TaskCubit(authState.user.uid);
-        //     }
-        //     return TaskCubit('');
-        //   },
-        //   lazy: false,
-        // ),
+        BlocProvider<AuthCubit>(
+          create: (context) => AuthCubit(authService: _authService),
+        ),
+        BlocProvider<UserCubit>(
+          create: (context) => UserCubit(userService: _userService),
+        ),
+        BlocProvider<TaskCubit>(
+          create: (context) => TaskCubit(taskService: _taskService),
+        ),
       ],
       child: MaterialApp.router(
-        routerConfig: _appRouter.config(),
-        title: 'Productivity App',
-        theme: ThemeData(
-          primarySwatch: Colors.blue,
-          visualDensity: VisualDensity.adaptivePlatformDensity,
+        title: 'Buteemjiji',
+        theme: ThemeData.dark().copyWith(
+          primaryColor: AppTheme.primaryBlue,
+          scaffoldBackgroundColor: AppTheme.darkBackground,
+          appBarTheme: const AppBarTheme(
+            backgroundColor: AppTheme.darkBackground,
+            foregroundColor: Colors.white,
+            elevation: 0,
+            centerTitle: true,
+          ),
+          cardTheme: CardTheme(
+            elevation: 0,
+            color: AppTheme.cardBackground,
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(12),
+            ),
+            margin: const EdgeInsets.symmetric(horizontal: 12.0, vertical: 8.0),
+          ),
+          elevatedButtonTheme: ElevatedButtonThemeData(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppTheme.primaryBlue,
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(8),
+              ),
+              minimumSize: const Size(double.infinity, 48),
+            ),
+          ),
+          textButtonTheme: TextButtonThemeData(
+            style: TextButton.styleFrom(
+              foregroundColor: AppTheme.primaryBlue,
+            ),
+          ),
+          tabBarTheme: const TabBarTheme(
+            labelColor: Colors.white,
+            unselectedLabelColor: Colors.white60,
+            indicatorSize: TabBarIndicatorSize.tab,
+          ),
+          inputDecorationTheme: InputDecorationTheme(
+            filled: true,
+            fillColor: AppTheme.cardBackground,
+            border: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppTheme.borderBlue),
+            ),
+            enabledBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppTheme.borderBlue),
+            ),
+            focusedBorder: OutlineInputBorder(
+              borderRadius: BorderRadius.circular(8),
+              borderSide: const BorderSide(color: AppTheme.primaryBlue, width: 2),
+            ),
+            labelStyle: const TextStyle(color: AppTheme.textSecondary),
+          ),
+          checkboxTheme: CheckboxThemeData(
+            shape: RoundedRectangleBorder(
+              borderRadius: BorderRadius.circular(4),
+            ),
+            fillColor: WidgetStateProperty.resolveWith<Color>((states) {
+              if (states.contains(WidgetState.selected)) {
+                return AppTheme.primaryBlue;
+              }
+              return AppTheme.disabledGrey;
+            }),
+          ),
+          bottomNavigationBarTheme: const BottomNavigationBarThemeData(
+            backgroundColor: AppTheme.primaryBlue,
+            selectedItemColor: Colors.white,
+            unselectedItemColor: Colors.white70,
+          ),
+          textTheme: const TextTheme(
+            displayLarge: TextStyle(color: Colors.white),
+            displayMedium: TextStyle(color: Colors.white),
+            displaySmall: TextStyle(color: Colors.white),
+            headlineMedium: TextStyle(color: Colors.white),
+            headlineSmall: TextStyle(color: Colors.white),
+            titleLarge: TextStyle(color: Colors.white),
+            titleMedium: TextStyle(color: Colors.white),
+            titleSmall: TextStyle(color: Colors.white),
+            bodyLarge: TextStyle(color: Colors.white),
+            bodyMedium: TextStyle(color: Colors.white),
+            bodySmall: TextStyle(color: AppTheme.textSecondary),
+          ),
         ),
-        //routerDelegate: _appRouter.delegate(),
-        //routeInformationParser: _appRouter.defaultRouteParser(),
+        routerConfig: _appRouter.config(),
       ),
     );
   }

@@ -2,645 +2,948 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:auto_route/auto_route.dart';
 import '../../cubits/auth/auth_cubit.dart';
-//import '../../cubits/auth/auth_state.dart';
-import '../../models/user_model.dart';
+import '../../cubits/user/user_cubit.dart';
+import '../../cubits/task/task_cubit.dart';
 import '../../routes/app_router.dart';
+import '../utils/app_enums.dart';
+import '../utils/theme_constants.dart';
+import '../widgets/user_stats_card.dart';
+import '../widgets/task_list.dart';
+import '../widgets/profile_section.dart';
 
-// @RoutePage()
-// class HomeScreen extends StatefulWidget {
-//   const HomeScreen({Key? key}) : super(key: key);
-//
-//   @override
-//   State<HomeScreen> createState() => _HomeScreenState();
-// }
-//
-// class _HomeScreenState extends State<HomeScreen> {
-//   int _selectedIndex = 0;
-//
-//   final List<Widget> _pages = [
-//     const TasksTab(),
-//     const StatsTab(),
-//     const ProfileTab(),
-//   ];
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return BlocConsumer<AuthCubit, AuthState>(
-//       listener: (context, state) {
-//         if (state is Unauthenticated) {
-//           context.router.replace(const SignInRoute());
-//         }
-//       },
-//       builder: (context, state) {
-//         if (state is! Authenticated) {
-//           return const Scaffold(
-//             body: Center(
-//               child: CircularProgressIndicator(),
-//             ),
-//           );
-//         }
-//
-//         final user = (state as Authenticated).user;
-//
-//         return Scaffold(
-//           appBar: AppBar(
-//             title: const Text('Productivity Hero'),
-//             centerTitle: true,
-//             actions: [
-//               IconButton(
-//                 icon: const Icon(Icons.logout),
-//                 onPressed: () {
-//                   context.read<AuthCubit>().signOut();
-//                 },
-//               ),
-//             ],
-//           ),
-//           body: _pages[_selectedIndex],
-//           bottomNavigationBar: BottomNavigationBar(
-//             currentIndex: _selectedIndex,
-//             onTap: (index) {
-//               setState(() {
-//                 _selectedIndex = index;
-//               });
-//             },
-//             items: const [
-//               BottomNavigationBarItem(
-//                 icon: Icon(Icons.task_alt),
-//                 label: 'Tasks',
-//               ),
-//               BottomNavigationBarItem(
-//                 icon: Icon(Icons.bar_chart),
-//                 label: 'Stats',
-//               ),
-//               BottomNavigationBarItem(
-//                 icon: Icon(Icons.person),
-//                 label: 'Profile',
-//               ),
-//             ],
-//           ),
-//         );
-//       },
-//     );
-//   }
-// }
-//
-// class TasksTab extends StatelessWidget {
-//   const TasksTab({Key? key}) : super(key: key);
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     return Center(
-//       child: Column(
-//         mainAxisAlignment: MainAxisAlignment.center,
-//         children: [
-//           const Text(
-//             'Tasks Tab',
-//             style: TextStyle(fontSize: 24),
-//           ),
-//           const SizedBox(height: 20),
-//           ElevatedButton.icon(
-//             onPressed: () {
-//               // TODO: Implement add task functionality
-//               ScaffoldMessenger.of(context).showSnackBar(
-//                 const SnackBar(content: Text('Add Task button pressed')),
-//               );
-//             },
-//             icon: const Icon(Icons.add),
-//             label: const Text('Add Task'),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
-//
-// class StatsTab extends StatelessWidget {
-//   const StatsTab({Key? key}) : super(key: key);
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     final user = context.select((AuthCubit cubit) =>
-//     cubit.state is Authenticated ? (cubit.state as Authenticated).user : null);
-//
-//     if (user == null) {
-//       return const Center(child: CircularProgressIndicator());
-//     }
-//
-//     return Center(
-//       child: Column(
-//         mainAxisAlignment: MainAxisAlignment.center,
-//         children: [
-//           const Text(
-//             'Your Hero Stats',
-//             style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold),
-//           ),
-//           const SizedBox(height: 30),
-//           _buildStatCard(context, user),
-//         ],
-//       ),
-//     );
-//   }
-//
-//   Widget _buildStatCard(BuildContext context, AppUser user) {
-//     return Card(
-//       elevation: 4,
-//       margin: const EdgeInsets.symmetric(horizontal: 16),
-//       child: Padding(
-//         padding: const EdgeInsets.all(16.0),
-//         child: Column(
-//           children: [
-//             Row(
-//               mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//               children: [
-//                 Column(
-//                   crossAxisAlignment: CrossAxisAlignment.start,
-//                   children: [
-//                     Text(
-//                       user.username,
-//                       style: const TextStyle(
-//                         fontSize: 20,
-//                         fontWeight: FontWeight.bold,
-//                       ),
-//                     ),
-//                     Text('Level ${user.level}'),
-//                   ],
-//                 ),
-//                 CircleAvatar(
-//                   radius: 30,
-//                   backgroundColor: Theme.of(context).primaryColor,
-//                   child: Text(
-//                     'Lv ${user.level}',
-//                     style: const TextStyle(
-//                       color: Colors.white,
-//                       fontWeight: FontWeight.bold,
-//                     ),
-//                   ),
-//                 ),
-//               ],
-//             ),
-//             const SizedBox(height: 20),
-//             _buildProgressBar(
-//               'Health',
-//               user.healthPoint / 100,
-//               Colors.red,
-//               '${user.healthPoint}/100',
-//             ),
-//             const SizedBox(height: 10),
-//             _buildProgressBar(
-//               'Experience',
-//               user.expPoint / (user.level * 100),
-//               Colors.blue,
-//               '${user.expPoint}/${user.level * 100}',
-//             ),
-//             const SizedBox(height: 20),
-//             Row(
-//               mainAxisAlignment: MainAxisAlignment.center,
-//               children: [
-//                 const Icon(Icons.monetization_on, color: Colors.amber),
-//                 const SizedBox(width: 8),
-//                 Text(
-//                   '${user.coin} coins',
-//                   style: const TextStyle(
-//                     fontSize: 18,
-//                     fontWeight: FontWeight.bold,
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           ],
-//         ),
-//       ),
-//     );
-//   }
-//
-//   Widget _buildProgressBar(
-//       String label,
-//       double value,
-//       Color color,
-//       String valueText,
-//       ) {
-//     return Column(
-//       crossAxisAlignment: CrossAxisAlignment.start,
-//       children: [
-//         Text(
-//           label,
-//           style: const TextStyle(fontWeight: FontWeight.w500),
-//         ),
-//         const SizedBox(height: 4),
-//         Stack(
-//           children: [
-//             Container(
-//               height: 20,
-//               width: double.infinity,
-//               decoration: BoxDecoration(
-//                 color: Colors.grey[300],
-//                 borderRadius: BorderRadius.circular(10),
-//               ),
-//             ),
-//             Container(
-//               height: 20,
-//               width: value * 345, // Approximating available width
-//               decoration: BoxDecoration(
-//                 color: color,
-//                 borderRadius: BorderRadius.circular(10),
-//               ),
-//             ),
-//             SizedBox(
-//               height: 20,
-//               width: double.infinity,
-//               child: Center(
-//                 child: Text(
-//                   valueText,
-//                   style: const TextStyle(
-//                     color: Colors.white,
-//                     fontWeight: FontWeight.bold,
-//                     shadows: [
-//                       Shadow(
-//                         color: Colors.black,
-//                         blurRadius: 2,
-//                       ),
-//                     ],
-//                   ),
-//                 ),
-//               ),
-//             ),
-//           ],
-//         ),
-//       ],
-//     );
-//   }
-// }
-//
-// class ProfileTab extends StatelessWidget {
-//   const ProfileTab({Key? key}) : super(key: key);
-//
-//   @override
-//   Widget build(BuildContext context) {
-//     final user = context.select((AuthCubit cubit) =>
-//     cubit.state is Authenticated ? (cubit.state as Authenticated).user : null);
-//
-//     if (user == null) {
-//       return const Center(child: CircularProgressIndicator());
-//     }
-//
-//     return Padding(
-//       padding: const EdgeInsets.all(16.0),
-//       child: Column(
-//         crossAxisAlignment: CrossAxisAlignment.start,
-//         children: [
-//           Center(
-//             child: Column(
-//               children: [
-//                 const CircleAvatar(
-//                   radius: 50,
-//                   child: Icon(Icons.person, size: 50),
-//                 ),
-//                 const SizedBox(height: 16),
-//                 Text(
-//                   user.username,
-//                   style: const TextStyle(
-//                     fontSize: 24,
-//                     fontWeight: FontWeight.bold,
-//                   ),
-//                 ),
-//                 Text(
-//                   'Level ${user.level} Hero',
-//                   style: const TextStyle(
-//                     fontSize: 18,
-//                     color: Colors.grey,
-//                   ),
-//                 ),
-//               ],
-//             ),
-//           ),
-//           const SizedBox(height: 32),
-//           const Text(
-//             'Profile Information',
-//             style: TextStyle(
-//               fontSize: 20,
-//               fontWeight: FontWeight.bold,
-//             ),
-//           ),
-//           const SizedBox(height: 16),
-//           _buildProfileItem(Icons.email, 'Email', user.email),
-//           _buildProfileItem(Icons.person, 'Gender', user.gender),
-//           _buildProfileItem(Icons.calendar_today, 'Age', user.age.toString()),
-//           const SizedBox(height: 32),
-//           const Text(
-//             'Game Stats',
-//             style: TextStyle(
-//               fontSize: 20,
-//               fontWeight: FontWeight.bold,
-//             ),
-//           ),
-//           const SizedBox(height: 16),
-//           _buildProfileItem(Icons.trending_up, 'Level', user.level.toString()),
-//           _buildProfileItem(Icons.favorite, 'Health', '${user.healthPoint}/100'),
-//           _buildProfileItem(Icons.stars, 'Experience', user.expPoint.toString()),
-//           _buildProfileItem(Icons.monetization_on, 'Coins', user.coin.toString()),
-//         ],
-//       ),
-//     );
-//   }
-//
-//   Widget _buildProfileItem(IconData icon, String label, String value) {
-//     return Padding(
-//       padding: const EdgeInsets.only(bottom: 16.0),
-//       child: Row(
-//         children: [
-//           Icon(icon, color: Colors.grey),
-//           const SizedBox(width: 16),
-//           Text(
-//             label,
-//             style: const TextStyle(
-//               fontSize: 16,
-//               fontWeight: FontWeight.w500,
-//             ),
-//           ),
-//           const Spacer(),
-//           Text(
-//             value,
-//             style: const TextStyle(
-//               fontSize: 16,
-//               color: Colors.grey,
-//             ),
-//           ),
-//         ],
-//       ),
-//     );
-//   }
-// }
 @RoutePage()
 class HomeScreen extends StatefulWidget {
-  const HomeScreen({Key? key}) : super(key: key);
+  const HomeScreen({super.key});
 
   @override
   _HomeScreenState createState() => _HomeScreenState();
 }
 
-class _HomeScreenState extends State<HomeScreen> {
-  int _selectedIndex = 0;
+class _HomeScreenState extends State<HomeScreen>
+    with SingleTickerProviderStateMixin {
+  late TabController _tabController;
 
-  final List<Widget> _pages = [
-    const HabitsTab(),
-    const DailiesTab(),
-    const TodosTab(),
-    const RewardsTab(),
-  ];
+  @override
+  void initState() {
+    super.initState();
+    _tabController = TabController(length: 5, vsync: this);
+
+    final authState = context.read<AuthCubit>().state;
+    if (authState.user != null) {
+      final uid = authState.user!.uid;
+      context.read<UserCubit>().loadUser(uid);
+      context.read<TaskCubit>().loadTasks(uid);
+      context.read<TaskCubit>().resetDailyTasks(uid);
+    }
+  }
+
+  @override
+  void dispose() {
+    _tabController.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
-    return BlocConsumer<AuthCubit, AuthState>(
+    return BlocListener<AuthCubit, AuthState>(
       listener: (context, state) {
-        if (state is AuthUnauthenticated) {
-          AutoRouter.of(context).replace(const SignInRoute());
+        if (state.status == AuthStatus.unauthenticated) {
+          context.router.replace(const SignInRoute());
         }
       },
-      builder: (context, state) {
-        if (state is AuthAuthenticated) {
-          final user = state.user;
+      child: Scaffold(
+        appBar: AppBar(
+          title: Text(_getAppBarTitle()),
+          centerTitle: true,
+          elevation: 0,
+        ),
+        body: BlocBuilder<UserCubit, UserState>(
+          builder: (context, userState) {
+            final user = userState.user;
 
-          return Scaffold(
-            appBar: AppBar(
-              title: const Text('Productivity App'),
-              actions: [
-                IconButton(
-                  icon: const Icon(Icons.exit_to_app),
-                  onPressed: () {
-                    context.read<AuthCubit>().signOut();
-                  },
-                ),
-              ],
-            ),
-            drawer: _buildDrawer(user),
-            body: _pages[_selectedIndex],
-            bottomNavigationBar: BottomNavigationBar(
-              currentIndex: _selectedIndex,
-              onTap: (index) {
-                setState(() {
-                  _selectedIndex = index;
-                });
-              },
-              type: BottomNavigationBarType.fixed,
-              items: const [
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.repeat),
-                  label: 'Habits',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.calendar_today),
-                  label: 'Dailies',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.check_box),
-                  label: 'To-Dos',
-                ),
-                BottomNavigationBarItem(
-                  icon: Icon(Icons.card_giftcard),
-                  label: 'Rewards',
-                ),
-              ],
-            ),
-          );
-        }
+            if (user == null) {
+              return const Center(child: CircularProgressIndicator());
+            }
 
-        // Show loading indicator if not authenticated yet
-        return const Scaffold(
-          body: Center(
-            child: CircularProgressIndicator(),
-          ),
-        );
-      },
-    );
-  }
-
-  Widget _buildDrawer(AppUser user) {
-    return Drawer(
-      child: ListView(
-        padding: EdgeInsets.zero,
-        children: [
-          UserAccountsDrawerHeader(
-            accountName: Text(user.username),
-            accountEmail: Text(user.email),
-            currentAccountPicture: CircleAvatar(
-              backgroundColor: Colors.blue,
-              child: Text(
-                user.username.isNotEmpty ? user.username[0].toUpperCase() : '?',
-                style: const TextStyle(fontSize: 40.0),
-              ),
-            ),
-            decoration: const BoxDecoration(
-              color: Colors.blue,
-            ),
-          ),
-          ListTile(
-            leading: const Icon(Icons.person),
-            title: const Text('Profile'),
-            onTap: () {
-              // Navigate to profile page
-              Navigator.pop(context);
-            },
-          ),
-          ListTile(
-            leading: const Icon(Icons.settings),
-            title: const Text('Settings'),
-            onTap: () {
-              // Navigate to settings page
-              Navigator.pop(context);
-            },
-          ),
-          const Divider(),
-          ListTile(
-            leading: Row(
-              mainAxisSize: MainAxisSize.min,
+            return Column(
               children: [
-                const Icon(Icons.favorite),
-                const SizedBox(width: 4),
-                Text('${user.healthPoint}'),
+                UserStatsCard(user: user),
+                Expanded(
+                  child: TabBarView(
+                    controller: _tabController,
+                    children: [
+                      TaskList(
+                        taskType: TaskType.habit,
+                        onAddPressed: _showAddTaskDialog,
+                      ),
+                      TaskList(
+                        taskType: TaskType.daily,
+                        onAddPressed: _showAddTaskDialog,
+                      ),
+                      TaskList(
+                        taskType: TaskType.todo,
+                        onAddPressed: _showAddTaskDialog,
+                      ),
+                      TaskList(
+                        taskType: TaskType.reward,
+                        onAddPressed: _showAddTaskDialog,
+                      ),
+                      ProfileSection(
+                        user: user,
+                        onSignOut: () => context.read<AuthCubit>().signOut(),
+                      ),
+                    ],
+                  ),
+                ),
               ],
+            );
+          },
+        ),
+        bottomNavigationBar: BottomNavigationBar(
+          type: BottomNavigationBarType.fixed,
+          backgroundColor: AppTheme.primaryBlue,
+          selectedItemColor: Colors.white,
+          unselectedItemColor: Colors.white.withOpacity(0.7), // Fixed from withValues to withOpacity
+          currentIndex: _tabController.index,
+          onTap: (index) {
+            if (index < 5) {
+              setState(() {
+                _tabController.index = index;
+              });
+            }
+          },
+          items: const [
+            BottomNavigationBarItem(icon: Icon(Icons.sync), label: ''),
+            BottomNavigationBarItem(
+              icon: Icon(Icons.calendar_today),
+              label: '',
             ),
-            title: const Text('Health'),
-          ),
-          ListTile(
-            leading: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.star),
-                const SizedBox(width: 4),
-                Text('${user.expPoint}'),
-              ],
+            BottomNavigationBarItem(
+              icon: Icon(Icons.check_circle_outline),
+              label: '',
             ),
-            title: const Text('Experience'),
-          ),
-          ListTile(
-            leading: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.monetization_on),
-                const SizedBox(width: 4),
-                Text('${user.coin}'),
-              ],
-            ),
-            title: const Text('Coins'),
-          ),
-          ListTile(
-            leading: Row(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                const Icon(Icons.military_tech),
-                const SizedBox(width: 4),
-                Text('${user.level}'),
-              ],
-            ),
-            title: const Text('Level'),
-          ),
-        ],
+            BottomNavigationBarItem(icon: Icon(Icons.card_giftcard), label: ''),
+            BottomNavigationBarItem(icon: Icon(Icons.menu), label: ''),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton(
+          onPressed: () {
+            _showAddTaskDialog(_getTaskTypeForTabIndex(_tabController.index));
+          },
+          backgroundColor: AppTheme.positiveGreen,
+          child: const Icon(Icons.add, color: Colors.white),
+        ),
       ),
     );
   }
-}
 
-// Tab pages
-class HabitsTab extends StatelessWidget {
-  const HabitsTab({Key? key}) : super(key: key);
+  String _getAppBarTitle() {
+    switch (_tabController.index) {
+      case 0:
+        return 'Зуршил';
+      case 1:
+        return 'Даалгавар';
+      case 2:
+        return 'Зорилго';
+      case 3:
+        return 'Урамшуулал';
+      case 4:
+        return 'Профайл';
+      default:
+        return '';
+    }
+  }
 
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'Habits',
-            style: TextStyle(fontSize: 24),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              // Add habit logic
-            },
-            child: const Text('Add New Habit'),
-          ),
-        ],
-      ),
-    );
+  TaskType _getTaskTypeForTabIndex(int index) {
+    switch (index) {
+      case 0:
+        return TaskType.habit;
+      case 1:
+        return TaskType.daily;
+      case 2:
+        return TaskType.todo;
+      case 3:
+        return TaskType.reward;
+      default:
+        return TaskType.habit;
+    }
+  }
+
+  void _showAddTaskDialog(TaskType taskType) {
+    context.router.push(AddTaskRoute(taskType: taskType));
   }
 }
 
-class DailiesTab extends StatelessWidget {
-  const DailiesTab({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'Dailies',
-            style: TextStyle(fontSize: 24),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              // Add daily logic
-            },
-            child: const Text('Add New Daily'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class TodosTab extends StatelessWidget {
-  const TodosTab({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'To-Dos',
-            style: TextStyle(fontSize: 24),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              // Add todo logic
-            },
-            child: const Text('Add New To-Do'),
-          ),
-        ],
-      ),
-    );
-  }
-}
-
-class RewardsTab extends StatelessWidget {
-  const RewardsTab({Key? key}) : super(key: key);
-
-  @override
-  Widget build(BuildContext context) {
-    return Center(
-      child: Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          const Text(
-            'Rewards',
-            style: TextStyle(fontSize: 24),
-          ),
-          const SizedBox(height: 16),
-          ElevatedButton(
-            onPressed: () {
-              // Add reward logic
-            },
-            child: const Text('Add New Reward'),
-          ),
-        ],
-      ),
-    );
-  }
-}
+// @RoutePage()
+// class HomeScreen extends StatefulWidget {
+//   const HomeScreen({super.key});
+//
+//   @override
+//   _HomeScreenState createState() => _HomeScreenState();
+// }
+//
+// class _HomeScreenState extends State<HomeScreen>
+//     with SingleTickerProviderStateMixin {
+//   late TabController _tabController;
+//
+//   @override
+//   void initState() {
+//     super.initState();
+//     _tabController = TabController(length: 5, vsync: this);
+//
+//     // Хэрэглэгч болон түүнд хамаарах даалгавруудыг баазаас татан бэлдэх
+//     final authState = context.read<AuthCubit>().state;
+//     if (authState.user != null) {
+//       final uid = authState.user!.uid;
+//       context.read<UserCubit>().loadUser(uid);
+//       context.read<TaskCubit>().loadTasks(uid);
+//
+//       // Өдөр солигдоход биелэгдсэн даалгаврын төлөвийг солих
+//       context.read<TaskCubit>().resetDailyTasks(uid);
+//     }
+//   }
+//
+//   @override
+//   void dispose() {
+//     _tabController.dispose();
+//     super.dispose();
+//   }
+//
+//   @override
+//   Widget build(BuildContext context) {
+//     return BlocListener<AuthCubit, AuthState>(
+//       listener: (context, state) {
+//         if (state.status == AuthStatus.unauthenticated) {
+//           context.router.replace(const SignInRoute());
+//         }
+//       },
+//       child: Scaffold(
+//         appBar: AppBar(
+//           title:
+//               _tabController.index == 3
+//                   ? const Text('Урамшуулал')
+//                   : _tabController.index == 2
+//                   ? const Text('Зорилго')
+//                   : _tabController.index == 1
+//                   ? const Text('Даалгавар')
+//                   : _tabController.index == 0
+//                   ? const Text('Зуршил')
+//                   : const Text('Профайл'),
+//           centerTitle: true,
+//           elevation: 0,
+//         ),
+//         body: BlocBuilder<UserCubit, UserState>(
+//           builder: (context, userState) {
+//             final user = userState.user;
+//
+//             if (user == null) {
+//               return const Center(child: CircularProgressIndicator());
+//             }
+//
+//             return Column(
+//               children: [
+//                 // Stats bar
+//                 // Container(
+//                 //   padding: const EdgeInsets.symmetric(
+//                 //     vertical: 16.0,
+//                 //     horizontal: 16.0,
+//                 //   ),
+//                 //   decoration: BoxDecoration(color: AppTheme.darkBackground),
+//                 //   child:
+//                 //       user != null
+//                 //           ? Column(
+//                 //             children: [
+//                 //               Row(
+//                 //                 children: [
+//                 //                   CircleAvatar(
+//                 //                     radius: 30,
+//                 //                     backgroundColor: AppTheme.cardBackground,
+//                 //                     child: CircleAvatar(
+//                 //                       radius: 28,
+//                 //                       backgroundColor: Colors.transparent,
+//                 //                       // child: Center(
+//                 //                       //   child: Text(
+//                 //                       //     // todo Зураг оруулах
+//                 //                       //     'O',
+//                 //                       //     style: TextStyle(
+//                 //                       //       fontSize: 24,
+//                 //                       //       fontWeight: FontWeight.bold,
+//                 //                       //       color: AppTheme.accentPurple,
+//                 //                       //     ),
+//                 //                       //   ),
+//                 //                       // ),
+//                 //                     ),
+//                 //                   ),
+//                 //                   const Spacer(),
+//                 //                   // Username
+//                 //                   Text(
+//                 //                     user.username,
+//                 //                     style: const TextStyle(
+//                 //                       fontSize: 20,
+//                 //                       fontWeight: FontWeight.bold,
+//                 //                       color: Colors.white,
+//                 //                     ),
+//                 //                   ),
+//                 //                   const Spacer(),
+//                 //                 ],
+//                 //               ),
+//                 //               const SizedBox(height: 8),
+//                 //
+//                 //               // Амь
+//                 //               Row(
+//                 //                 children: [
+//                 //                   Icon(
+//                 //                     Icons.favorite,
+//                 //                     color: AppTheme.healthRed,
+//                 //                     size: 16,
+//                 //                   ),
+//                 //                   const SizedBox(width: 4),
+//                 //                   Expanded(
+//                 //                     child: ClipRRect(
+//                 //                       borderRadius: BorderRadius.circular(4),
+//                 //                       child: LinearProgressIndicator(
+//                 //                         value: user.healthPoint / 100,
+//                 //                         backgroundColor:
+//                 //                             AppTheme.darkBackground,
+//                 //                         valueColor:
+//                 //                             AlwaysStoppedAnimation<Color>(
+//                 //                               AppTheme.healthRed,
+//                 //                             ),
+//                 //                         minHeight: 10,
+//                 //                       ),
+//                 //                     ),
+//                 //                   ),
+//                 //                   const SizedBox(width: 4),
+//                 //                   Text(
+//                 //                     '${user.healthPoint}/100',
+//                 //                     style: TextStyle(
+//                 //                       color: AppTheme.textSecondary,
+//                 //                       fontSize: 12,
+//                 //                     ),
+//                 //                   ),
+//                 //                   const SizedBox(width: 8),
+//                 //                   Text(
+//                 //                     'Амь',
+//                 //                     style: TextStyle(
+//                 //                       color: AppTheme.textSecondary,
+//                 //                       fontSize: 12,
+//                 //                     ),
+//                 //                   ),
+//                 //                 ],
+//                 //               ),
+//                 //
+//                 //               const SizedBox(height: 4),
+//                 //
+//                 //               // Туршлага
+//                 //               Row(
+//                 //                 children: [
+//                 //                   Icon(
+//                 //                     Icons.star,
+//                 //                     color: AppTheme.expAmber,
+//                 //                     size: 16,
+//                 //                   ),
+//                 //                   const SizedBox(width: 4),
+//                 //                   Expanded(
+//                 //                     child: ClipRRect(
+//                 //                       borderRadius: BorderRadius.circular(4),
+//                 //                       child: LinearProgressIndicator(
+//                 //                         value:
+//                 //                             user.expPoint / (user.level * 100),
+//                 //                         backgroundColor:
+//                 //                             AppTheme.darkBackground,
+//                 //                         valueColor:
+//                 //                             AlwaysStoppedAnimation<Color>(
+//                 //                               AppTheme.expAmber,
+//                 //                             ),
+//                 //                         minHeight: 10,
+//                 //                       ),
+//                 //                     ),
+//                 //                   ),
+//                 //                   const SizedBox(width: 4),
+//                 //                   Text(
+//                 //                     '${user.expPoint}/100',
+//                 //                     style: TextStyle(
+//                 //                       color: AppTheme.textSecondary,
+//                 //                       fontSize: 12,
+//                 //                     ),
+//                 //                   ),
+//                 //                   const SizedBox(width: 8),
+//                 //                   Text(
+//                 //                     'Туршлага',
+//                 //                     style: TextStyle(
+//                 //                       color: AppTheme.textSecondary,
+//                 //                       fontSize: 12,
+//                 //                     ),
+//                 //                   ),
+//                 //                 ],
+//                 //               ),
+//                 //
+//                 //               const SizedBox(height: 4),
+//                 //
+//                 //               // Түвшин болон зоос
+//                 //               Row(
+//                 //                 children: [
+//                 //                   Text(
+//                 //                     '${user.level}-р түвшин',
+//                 //                     style: const TextStyle(
+//                 //                       fontSize: 14,
+//                 //                       color: Colors.white,
+//                 //                     ),
+//                 //                   ),
+//                 //                   const Spacer(),
+//                 //                   Icon(
+//                 //                     Icons.monetization_on,
+//                 //                     color: AppTheme.coinOrange,
+//                 //                     size: 16,
+//                 //                   ),
+//                 //                   const SizedBox(width: 4),
+//                 //                   Text(
+//                 //                     '${user.coin}',
+//                 //                     style: const TextStyle(
+//                 //                       fontSize: 14,
+//                 //                       fontWeight: FontWeight.bold,
+//                 //                       color: Colors.white,
+//                 //                     ),
+//                 //                   ),
+//                 //                 ],
+//                 //               ),
+//                 //             ],
+//                 //           )
+//                 //           : const Center(child: CircularProgressIndicator()),
+//                 // ),
+//                 UserStatsCard(user: user),
+//                 // Tasks tabs
+//                 Expanded(
+//                   child: TabBarView(
+//                     controller:
+//                         _tabController,
+//                     children: [
+//                       // Habits tab
+//                       _buildTaskList(TaskType.habit),
+//
+//                       // Dailies tab
+//                       _buildTaskList(TaskType.daily),
+//
+//                       // To-Dos tab
+//                       _buildTaskList(TaskType.todo),
+//
+//                       // Rewards tab
+//                       _buildTaskList(TaskType.reward),
+//
+//                       // Profile tab
+//                       _buildProfileTab(),
+//                     ],
+//                   ),
+//                 ),
+//               ],
+//             );
+//           },
+//         ),
+//         bottomNavigationBar: BottomNavigationBar(
+//           type: BottomNavigationBarType.fixed,
+//           backgroundColor: AppTheme.primaryBlue,
+//           selectedItemColor: Colors.white,
+//           unselectedItemColor: Colors.white.withValues(alpha: 0.7),
+//           currentIndex: _tabController.index,
+//           onTap: (index) {
+//             if (index < 5) {
+//               setState(() {
+//                 _tabController.index = index;
+//               });
+//             }
+//           },
+//           items: const [
+//             BottomNavigationBarItem(icon: Icon(Icons.sync), label: ''),
+//             BottomNavigationBarItem(
+//               icon: Icon(Icons.calendar_today),
+//               label: '',
+//             ),
+//             BottomNavigationBarItem(
+//               icon: Icon(Icons.check_circle_outline),
+//               label: '',
+//             ),
+//             BottomNavigationBarItem(icon: Icon(Icons.card_giftcard), label: ''),
+//             BottomNavigationBarItem(icon: Icon(Icons.menu), label: ''),
+//           ],
+//         ),
+//         floatingActionButton: FloatingActionButton(
+//           onPressed: () {
+//             _showAddTaskDialog(context, _tabController.index);
+//           },
+//           backgroundColor: AppTheme.positiveGreen,
+//           child: const Icon(Icons.add, color: Colors.white),
+//         ),
+//       ),
+//     );
+//   }
+//
+//   Widget _buildTaskList(TaskType type) {
+//     return BlocBuilder<TaskCubit, TaskState>(
+//       builder: (context, state) {
+//         if (state.status == TaskStatus.loading) {
+//           return const Center(child: CircularProgressIndicator());
+//         }
+//
+//         if (state.status == TaskStatus.error) {
+//           return Center(
+//             child: Text(
+//               'Error: ${state.errorMessage}',
+//               style: const TextStyle(color: Colors.red),
+//             ),
+//           );
+//         }
+//
+//         final tasks = state.getTasksByType(type);
+//
+//         if (tasks.isEmpty) {
+//           return EmptyTaskState(
+//             taskType: type,
+//             onAddPressed:
+//                 () => _showAddTaskDialog(context, _getTabIndexForType(type)),
+//           );
+//         }
+//
+//         return ListView.builder(
+//           itemCount: tasks.length,
+//           itemBuilder: (context, index) {
+//             final task = tasks[index];
+//             return _buildTaskItem(task);
+//           },
+//         );
+//       },
+//     );
+//   }
+//
+//   Widget _buildProfileTab() {
+//     return BlocBuilder<UserCubit, UserState>(
+//       builder: (context, userState) {
+//         final user = userState.user;
+//
+//         if (user == null) {
+//           return const Center(child: CircularProgressIndicator());
+//         }
+//
+//           return SingleChildScrollView(
+//             child: Column(
+//               children: [
+//                 // User stats - you could use your UserStatsCard here for consistency
+//                 // UserStatsCard(user: user),
+//
+//                 // Personal Information section
+//                 Padding(
+//                   padding: const EdgeInsets.all(16.0),
+//                   child: Column(
+//                     crossAxisAlignment: CrossAxisAlignment.start,
+//                     children: [
+//                       Text(
+//                         'Хувийн мэдээлэл', // Personal Information in Mongolian
+//                         style: TextStyle(
+//                           color: AppTheme.textSecondary,
+//                           fontSize: 14,
+//                           fontWeight: FontWeight.bold,
+//                         ),
+//                       ),
+//                       const SizedBox(height: 8),
+//                       Container(
+//                         decoration: BoxDecoration(
+//                           color: AppTheme.cardBackground,
+//                           borderRadius: BorderRadius.circular(12),
+//                         ),
+//                         child: Column(
+//                           children: [
+//                             GestureDetector(
+//                               onTap: () {
+//                                 // Edit username functionality
+//                               },
+//                               child: _buildProfileItem(
+//                                 label: 'Нэр',
+//                                 value: user.username,
+//                               ),
+//                             ),
+//                             const Divider(
+//                               height: 1,
+//                               color: AppTheme.darkBackground,
+//                             ),
+//                             GestureDetector(
+//                               onTap: () {
+//                                 // Edit email functionality
+//                               },
+//                               child: _buildProfileItem(
+//                                 label: 'Имэйл',
+//                                 value: user.email,
+//                               ),
+//                             ),
+//                             const Divider(
+//                               height: 1,
+//                               color: AppTheme.darkBackground,
+//                             ),
+//                             GestureDetector(
+//                               onTap: () {
+//                                 // Edit password functionality
+//                               },
+//                               child: _buildProfileItem(
+//                                 label: 'Нууц үг',
+//                                 value: '********',
+//                                 isPassword: true,
+//                               ),
+//                             ),
+//                             const Divider(
+//                               height: 1,
+//                               color: AppTheme.darkBackground,
+//                             ),
+//                             GestureDetector(
+//                               onTap: () {
+//                                 // Edit gender functionality
+//                               },
+//                               child: _buildProfileItem(
+//                                 label: 'Хүйс',
+//                                 value: _getGenderText(user.gender),
+//                               ),
+//                             ),
+//                             const Divider(
+//                               height: 1,
+//                               color: AppTheme.darkBackground,
+//                             ),
+//                             GestureDetector(
+//                               onTap: () {
+//                                 // Edit age functionality
+//                               },
+//                               child: _buildProfileItem(
+//                                 label: 'Нас',
+//                                 value: '${user.age}',
+//                               ),
+//                             ),
+//                           ],
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                 ),
+//
+//                 // Sign Out Button
+//                 Padding(
+//                   padding: const EdgeInsets.symmetric(horizontal: 16.0),
+//                   child: TextButton(
+//                     onPressed: () {
+//                       context.read<AuthCubit>().signOut();
+//                     },
+//                     style: TextButton.styleFrom(
+//                       foregroundColor: AppTheme.primaryBlue,
+//                     ),
+//                     child: const Center(
+//                       child: Text(
+//                         'Гарах', // Sign out in Mongolian
+//                         style: TextStyle(fontSize: 16),
+//                       ),
+//                     ),
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           );
+//       },
+//     );
+//   }
+//
+// // Helper method to build profile items
+//   Widget _buildProfileItem({
+//     required String label,
+//     required String value,
+//     bool isPassword = false,
+//   }) {
+//     return Padding(
+//       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+//       child: Row(
+//         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+//         children: [
+//           Text(label, style: const TextStyle(color: Colors.white)),
+//           Text(
+//             value,
+//             style: TextStyle(
+//               color: isPassword ? AppTheme.textSecondary : Colors.white,
+//               fontWeight: FontWeight.w500,
+//             ),
+//           ),
+//         ],
+//       ),
+//     );
+//   }
+//
+// // Helper method to get gender text
+//   String _getGenderText(Gender gender) {
+//     switch (gender) {
+//       case Gender.male:
+//         return 'Эр';
+//       case Gender.female:
+//         return 'Эм';
+//       default:
+//         return 'Бусад';
+//     }
+//   }
+//
+//   Widget _buildTaskItem(Task task) {
+//     switch (task.type) {
+//       case TaskType.habit:
+//         return _buildHabitItem(task);
+//       case TaskType.daily:
+//         return _buildDailyItem(task);
+//       case TaskType.todo:
+//         return _buildTodoItem(task);
+//       case TaskType.reward:
+//         return _buildRewardItem(task);
+//     }
+//   }
+//
+//   Widget _buildHabitItem(Task task) {
+//     final isPositive = task.isPositive ?? true;
+//
+//     return GestureDetector(
+//       onTap: () {
+//         context.router.push(EditTaskRoute(task: task));
+//       },
+//       child: Card(
+//         margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             ListTile(
+//               leading: Row(
+//                 mainAxisSize: MainAxisSize.min,
+//                 children: [
+//                   if (isPositive)
+//                     IconButton(
+//                       icon: const Icon(Icons.add, color: Colors.green),
+//                       onPressed: () {
+//                         context.read<TaskCubit>().completeTask(task);
+//                       },
+//                     ),
+//                   if (!isPositive)
+//                     IconButton(
+//                       icon: const Icon(Icons.remove, color: Colors.red),
+//                       onPressed: () {
+//                         context.read<TaskCubit>().completeTask(task);
+//                       },
+//                     ),
+//                 ],
+//               ),
+//               title: Text(task.title),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+//
+//   Widget _buildDailyItem(Task task) {
+//     final isCompleted = task.isCompleted ?? false;
+//
+//     return GestureDetector(
+//       onTap: () {
+//         context.router.push(EditTaskRoute(task: task));
+//       },
+//       child: Card(
+//         margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+//         child: Column(
+//           crossAxisAlignment: CrossAxisAlignment.start,
+//           children: [
+//             ListTile(
+//               leading: Checkbox(
+//                 value: isCompleted,
+//                 onChanged: (bool? value) {
+//                   if (value == true && !isCompleted) {
+//                     context.read<TaskCubit>().completeTask(task);
+//                   }
+//                 },
+//               ),
+//               title: Text(
+//                 task.title,
+//                 style:
+//                     isCompleted
+//                         ? const TextStyle(
+//                           decoration: TextDecoration.lineThrough,
+//                           color: Colors.grey,
+//                         )
+//                         : null,
+//               ),
+//             ),
+//           ],
+//         ),
+//       ),
+//     );
+//   }
+//
+//   Widget _buildTodoItem(Task task) {
+//     final isCompleted = task.isCompleted ?? false;
+//     final dueDate = task.dueDate;
+//     final isPastDue =
+//         dueDate != null && dueDate.isBefore(DateTime.now()) && !isCompleted;
+//
+//     return GestureDetector(
+//       onTap: () {
+//         context.router.push(EditTaskRoute(task: task));
+//       },
+//       child: Card(
+//         margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+//         elevation: isPastDue ? 3 : 1,
+//         color: isPastDue ? Colors.red.shade50 : null,
+//         shape: RoundedRectangleBorder(
+//           borderRadius: BorderRadius.circular(12),
+//           side: isPastDue
+//               ? BorderSide(color: Colors.red.shade300, width: 1.0)
+//               : BorderSide.none,
+//         ),
+//         child: ListTile(
+//           contentPadding: const EdgeInsets.symmetric(horizontal: 16.0, vertical: 8.0),
+//           leading: Checkbox(
+//             value: isCompleted,
+//             activeColor: isPastDue ? Colors.red : null,
+//             onChanged: (bool? value) {
+//               if (value == true && !isCompleted) {
+//                 //final updatedTask = task.copyWith(isCompleted: true);
+//
+//                 context.read<TaskCubit>().completeTask(task);
+//                 Future.delayed(const Duration(milliseconds: 800), () {
+//                   // This is where you'd handle the actual deletion
+//                   context.read<TaskCubit>().deleteTask(task);
+//                 });
+//               }
+//             },
+//           ),
+//           title: Text(
+//             task.title,
+//             style: TextStyle(
+//               fontSize: 16,
+//               fontWeight: isPastDue && !isCompleted ? FontWeight.bold : null,
+//               decoration: isCompleted ? TextDecoration.lineThrough : null,
+//               color: isCompleted
+//                   ? Colors.grey
+//                   : isPastDue ? Colors.red.shade700 : null,
+//             ),
+//           ),
+//           subtitle: dueDate != null
+//               ? Padding(
+//             padding: const EdgeInsets.only(top: 4.0),
+//             child: Row(
+//               children: [
+//                 if (isPastDue)
+//                   Icon(
+//                     Icons.warning_rounded,
+//                     color: Colors.red.shade700,
+//                     size: 16,
+//                   ),
+//                 if (isPastDue) const SizedBox(width: 4),
+//                 Text(
+//                   isPastDue
+//                       ? 'Past due: ${dueDate.day}/${dueDate.month}/${dueDate.year}'
+//                       : 'Due: ${dueDate.day}/${dueDate.month}/${dueDate.year}',
+//                   style: TextStyle(
+//                     fontSize: 14,
+//                     color: isPastDue ? Colors.red.shade700 : Colors.grey.shade600,
+//                     fontWeight: isPastDue ? FontWeight.bold : null,
+//                   ),
+//                 ),
+//               ],
+//             ),
+//           )
+//               : null,
+//           trailing: isPastDue
+//               ? Container(
+//             width: 4,
+//             height: 45,
+//             decoration: BoxDecoration(
+//               color: Colors.red.shade400,
+//               borderRadius: BorderRadius.circular(4),
+//             ),
+//           )
+//               : null,
+//         ),
+//       ),
+//     );
+//   }
+//
+//   Widget _buildRewardItem(Task task) {
+//     return BlocBuilder<UserCubit, UserState>(
+//       builder: (context, userState) {
+//         final hasEnoughCoins =
+//             userState.user != null &&
+//                 userState.user!.coin >= (task.cost ?? 0);
+//
+//         return GestureDetector(
+//           onTap: () {
+//             context.router.push(EditTaskRoute(task: task));
+//           },
+//           child: Card(
+//             margin: const EdgeInsets.symmetric(horizontal: 8.0, vertical: 4.0),
+//             child: Column(
+//               crossAxisAlignment: CrossAxisAlignment.start,
+//               children: [
+//                 ListTile(
+//                   leading: Row(
+//                     mainAxisSize: MainAxisSize.min,
+//                     children: [
+//                       GestureDetector(
+//                         onTap: hasEnoughCoins
+//                             ? () {
+//                           context.read<TaskCubit>().completeTask(task);
+//                           ScaffoldMessenger.of(context).showSnackBar(
+//                             SnackBar(
+//                               content: Text('${task.title} шагналыг амжилттай авлаа!'),
+//                               backgroundColor: Colors.green,
+//                               duration: const Duration(seconds: 2),
+//                             ),
+//                           );
+//                         }
+//                             : () {
+//                           ScaffoldMessenger.of(context).showSnackBar(
+//                             const SnackBar(
+//                               content: Text('Худалдан авахад зоос хүрэхгүй байна!'),
+//                               duration: Duration(seconds: 1),
+//                             ),
+//                           );
+//                         },
+//                         child: Container(
+//                           padding: const EdgeInsets.all(8),
+//                           child: const Icon(
+//                             Icons.attach_money,
+//                             color: Colors.yellow,
+//                           ),
+//                         ),
+//                       ),
+//                     ],
+//                   ),
+//                   title: Text(task.title),
+//                   subtitle: Text('${task.cost ?? 0} зоос'),
+//                 ),
+//               ],
+//             ),
+//           ),
+//         );
+//       },
+//     );
+//   }
+//
+//   void _showAddTaskDialog(BuildContext context, int tabIndex) {
+//     final taskTypes = [
+//       TaskType.habit,
+//       TaskType.daily,
+//       TaskType.todo,
+//       TaskType.reward,
+//     ];
+//     final taskType = taskTypes[tabIndex];
+//
+//     context.router.push(AddTaskRoute(taskType: taskType));
+//   }
+//
+//   int _getTabIndexForType(TaskType type) {
+//     switch (type) {
+//       case TaskType.habit:
+//         return 0;
+//       case TaskType.daily:
+//         return 1;
+//       case TaskType.todo:
+//         return 2;
+//       case TaskType.reward:
+//         return 3;
+//     }
+//   }
+// }

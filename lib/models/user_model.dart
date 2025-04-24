@@ -1,7 +1,8 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart';
 import '../utils/app_enums.dart';
 
-class AppUser {
+class AppUser extends Equatable {
   final String uid;
   final String username;
   final String email;
@@ -11,8 +12,9 @@ class AppUser {
   final int healthPoint;
   final int expPoint;
   final int coin;
+  final int maxExp;
 
-  AppUser({
+  const AppUser({
     required this.uid,
     required this.username,
     required this.email,
@@ -22,25 +24,25 @@ class AppUser {
     this.healthPoint = 100,
     this.expPoint = 0,
     this.coin = 0,
+    this.maxExp = 100,
   });
 
-  // Convert Firestore document to AppUser
   factory AppUser.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
     return AppUser(
         uid: doc.id,
-        username: data['username'] ?? 'Guest',
+        username: data['username'] ?? '',
         email: data['email'] ?? '',
-        gender: _genderFromString(data['gender'] ?? 'other'),
+        gender: _genderFromString(data['gender'] ?? ''),
         age: data['age'] ?? 0,
         level: data['level'] ?? 1,
         healthPoint: data['healthPoint'] ?? 100,
         expPoint: data['expPoint'] ?? 0,
-        coin: data['coin'] ?? 0
+        coin: data['coin'] ?? 0,
+        maxExp: data['maxExp'] ?? 100
     );
   }
 
-  // Convert Gender enum to string
   static Gender _genderFromString(String gender) {
     switch (gender.toLowerCase()) {
       case 'male':
@@ -52,7 +54,6 @@ class AppUser {
     }
   }
 
-  // Convert AppUser to Firestore document
   Map<String, dynamic> toMap() {
     return {
       'username': username,
@@ -63,10 +64,10 @@ class AppUser {
       'healthPoint': healthPoint,
       'expPoint': expPoint,
       'coin': coin,
+      'maxExp': maxExp,
     };
   }
 
-  // Create a copy of AppUser with modified fields
   AppUser copyWith({
     String? uid,
     String? username,
@@ -77,6 +78,7 @@ class AppUser {
     int? healthPoint,
     int? expPoint,
     int? coin,
+    int? maxExp,
   }) {
     return AppUser(
       uid: uid ?? this.uid,
@@ -88,6 +90,10 @@ class AppUser {
       healthPoint: healthPoint ?? this.healthPoint,
       expPoint: expPoint ?? this.expPoint,
       coin: coin ?? this.coin,
+      maxExp: maxExp ?? this.maxExp,
     );
   }
+
+  @override
+  List<Object?> get props => [uid, username, email, gender, age, level, healthPoint, expPoint, coin, maxExp];
 }

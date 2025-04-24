@@ -1,12 +1,14 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:equatable/equatable.dart';
 import 'package:flutter/material.dart';
+import '../extensions/color_extensions.dart';
 
-class Category {
+class Category extends Equatable {
   final String categoryId;
   final String name;
   final Color color;
 
-  Category({
+  const Category({
     required this.categoryId,
     required this.name,
     required this.color,
@@ -14,17 +16,34 @@ class Category {
 
   factory Category.fromFirestore(DocumentSnapshot<Map<String, dynamic>> doc) {
     final data = doc.data()!;
+    final String colorString = data['color'] ?? '';
+
     return Category(
       categoryId: doc.id,
-      name: data['name'] ?? 'Uncategorized',
-      color: Color(data['color'] ?? 0xFF9E9E9E),
+      name: data['name'] ?? '',
+      color: colorString.toColor(),
     );
   }
 
   Map<String, dynamic> toMap() {
     return {
       'name': name,
-      'color': color.value,
+      'color': color.toHex(includeAlpha: false),
     };
   }
+
+  Category copyWith({
+    String? categoryId,
+    String? name,
+    Color? color,
+  }) {
+    return Category(
+      categoryId: categoryId ?? this.categoryId,
+      name: name ?? this.name,
+      color: color ?? this.color,
+    );
+  }
+
+  @override
+  List<Object?> get props => [categoryId, name, color];
 }

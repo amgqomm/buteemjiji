@@ -26,6 +26,8 @@ dependencies:
   # Routing
   auto_route: ^10.0.1
 
+  intl: ^0.18.1
+
 dev_dependencies:
   flutter_test:
     sdk: flutter
@@ -35,5 +37,8 @@ dev_dependencies:
   build_runner: ^2.4.15
 
 flutter:
-
+  assets:
+    - lib/assets/images/male.jpg
+    - lib/assets/images/female.jpg
+    - lib/assets/images/other.jpg
   uses-material-design: true
